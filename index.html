@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZenWave AI - Therapeutic Chatbot Platform</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="header">
+                <div class="logo">ZenWave AI</div>
+                <div class="subtitle">Therapeutic Intelligence Platform</div>
+            </div>
+            
+            <div class="analytics-section">
+                <div class="card">
+                    <div class="card-title">Sentiment Analysis</div>
+                    <div class="mood-display">
+                        <div class="mood-value" id="moodValue">Neutral</div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" id="confidenceFill" style="width: 85%"></div>
+                        </div>
+                        <div class="confidence-text" id="confidenceText">Confidence: 85%</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">Therapeutic Frequency</div>
+                    <div class="frequency-display">
+                        <div class="frequency-value" id="frequencyValue">528</div>
+                        <div class="frequency-label" id="frequencyLabel">Hz - Love Frequency</div>
+                        <div class="waveform" id="waveform"></div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">AI Beat Generator</div>
+                    <div class="audio-controls">
+                        <button class="control-button" id="playButton" onclick="toggleAudio()">Play</button>
+                        <div class="volume-control">
+                            <span class="volume-label">Vol</span>
+                            <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="30">
+                            <span class="volume-label" id="volumeDisplay">30</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-area">
+            <div class="chat-header">
+                <div class="header-content">
+                    <div class="header-text">
+                        <h1 class="chat-title">Therapeutic Chat Interface</h1>
+                        <div class="chat-status">
+                            <span class="status-dot"></span>
+                            AI Assistant Active - Real-time Sentiment Monitoring
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot-message">
+                    Welcome to ZenWave AI. I am your therapeutic assistant equipped with real-time sentiment analysis and adaptive frequency generation. I can detect your emotional state and generate personalized AI beats to help regulate your mood. How may I assist you today?
+                </div>
+            </div>
+            
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>
+            
+            <div class="chat-input-area">
+                <div class="quick-actions" id="quickActions">
+                    <button class="quick-btn" onclick="sendQuickMessage('I am feeling stressed about work')">Work Stress</button>
+                    <button class="quick-btn" onclick="sendQuickMessage('I am having trouble sleeping')">Sleep Issues</button>
+                    <button class="quick-btn" onclick="sendQuickMessage('I feel anxious about the future')">Anxiety</button>
+                    <button class="quick-btn" onclick="sendQuickMessage('I am feeling overwhelmed')">Overwhelmed</button>
+                    <button class="quick-btn" onclick="sendQuickMessage('I need motivation')">Need Motivation</button>
+                </div>
+                <div class="input-container">
+                    <textarea class="chat-input" id="chatInput" placeholder="Type your message here..." rows="1"></textarea>
+                    <button class="send-button" id="sendButton" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Advanced sentiment analysis patterns
+        const sentimentPatterns = {
+            angry: {
+                keywords: ['angry', 'mad', 'furious', 'rage', 'hate', 'annoyed', 'frustrated', 'pissed', 'irritated', 'livid'],
+                intensity: ['extremely', 'very', 'really', 'so', 'incredibly'],
+                weight: 2.0
+            },
+            sad: {
+                keywords: ['sad', 'depressed', 'down', 'upset', 'crying', 'hurt', 'lonely', 'miserable', 'devastated', 'heartbroken'],
+                intensity: ['extremely', 'very', 'really', 'so', 'deeply'],
+                weight: 1.8
+            },
+            anxious: {
+                keywords: ['anxious', 'worried', 'nervous', 'stressed', 'panic', 'fear', 'scared', 'overwhelmed', 'tense', 'restless'],
+                intensity: ['extremely', 'very', 'really', 'so', 'incredibly'],
+                weight: 1.9
+            },
+            happy: {
+                keywords: ['happy', 'joy', 'excited', 'great', 'awesome', 'amazing', 'wonderful', 'fantastic', 'thrilled', 'elated'],
+                intensity: ['extremely', 'very', 'really', 'so', 'incredibly'],
+                weight: 1.5
+            },
+            calm: {
+                keywords: ['calm', 'peaceful', 'relaxed', 'serene', 'tranquil', 'zen', 'chill', 'content', 'balanced', 'centered'],
+                intensity: ['very', 'really', 'so', 'completely'],
+                weight: 1.3
+            }
+        };
+
+        // Therapeutic frequencies with beat patterns
+        const therapeuticFrequencies = {
+            angry: { 
+                freq: 396, 
+                name: 'Liberation Frequency',
+                bpm: 60,
+                pattern: [1, 0, 0.5, 0, 1, 0, 0.3, 0]
+            },
+            sad: { 
+                freq: 528, 
+                name: 'Love Frequency',
+                bpm: 72,
+                pattern: [1, 0, 0.6, 0, 0.8, 0, 0.4, 0]
+            },
+            anxious: { 
+                freq: 432, 
+                name: 'Harmony Frequency',
+                bpm: 80,
+                pattern: [0.8, 0, 0.4, 0, 0.6, 0, 0.3, 0]
+            },
+            happy: { 
+                freq: 741, 
+                name: 'Expression Frequency',
+                bpm: 120,
+                pattern: [1, 0.3, 0.7, 0.2, 1, 0.4, 0.5, 0.1]
+            },
+            calm: { 
+                freq: 528, 
+                name: 'Love Frequency',
+                bpm: 60,
+                pattern: [0.7, 0, 0.3, 0, 0.5, 0, 0.2, 0]
+            },
+            neutral: { 
+                freq: 528, 
+                name: 'Love Frequency',
+                bpm: 80,
+                pattern: [0.8, 0, 0.4, 0, 0.6, 0, 0.3, 0]
+            }
+        };
+
+        let currentMood = 'neutral';
+        let isPlaying = false;
+        let audioContext = null;
+        let masterGain = null;
+        let beatInterval = null;
+        let currentStep = 0;
+
+        // Initialize advanced audio system
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                masterGain = audioContext.createGain();
+                masterGain.connect(audioContext.destination);
+                masterGain.gain.value = 0.15;
+                
+                // Initialize waveform visualization
+                initWaveform();
+            }
+        }
+
+        // Initialize waveform visualization
+        function initWaveform() {
+            const waveform = document.getElementById('waveform');
+            waveform.innerHTML = '';
+            
+            for (let i = 0; i < 20; i++) {
+                const bar = document.createElement('div');
+                bar.className = 'wave-bar';
+                bar.style.left = `${i * 5}%`;
+                bar.style.animationDelay = `${i * 0.1}s`;
+                waveform.appendChild(bar);
+            }
+        }
+
+        // Advanced sentiment analysis
+        function analyzeSentiment(message) {
+            const lowerMessage = message.toLowerCase();
+            const words = lowerMessage.split(/\s+/);
+            let scores = {};
+            
+            // Initialize scores
+            for (let mood in sentimentPatterns) {
+                scores[mood] = 0;
+            }
+            
+            // Analyze each word
+            words.forEach((word, index) => {
+                for (let mood in sentimentPatterns) {
+                    const pattern = sentimentPatterns[mood];
+                    
+                    // Check for keywords
+                    if (pattern.keywords.includes(word)) {
+                        let score = pattern.weight;
+                        
+                        // Check for intensity modifiers
+                        if (index > 0 && pattern.intensity.includes(words[index - 1])) {
+                            score *= 1.5;
+                        }
+                        
+                        scores[mood] += score;
+                    }
+                }
+            });
+            
+            // Find dominant mood
+            let maxScore = 0;
+            let detectedMood = 'neutral';
+            
+            for (let mood in scores) {
+                if (scores[mood] > maxScore) {
+                    maxScore = scores[mood];
+                    detectedMood = mood;
+                }
+            }
+            
+            // Calculate confidence
+            const totalScore = Object.values(scores).reduce((a, b) => a + b, 0);
+            const confidence = totalScore > 0 ? Math.min(95, Math.max(60, (maxScore / totalScore) * 100)) : 75;
+            
+            return { mood: detectedMood, confidence: Math.round(confidence) };
+        }
+
+        // Update mood display
+        function updateMoodDisplay(mood, confidence) {
+            currentMood = mood;
+            const moodValue = document.getElementById('moodValue');
+            const confidenceFill = document.getElementById('confidenceFill');
+            const confidenceText = document.getElementById('confidenceText');
+            const frequencyValue = document.getElementById('frequencyValue');
+            const frequencyLabel = document.getElementById('frequencyLabel');
+            
+            moodValue.textContent = mood.charAt(0).toUpperCase() + mood.slice(1);
+            confidenceFill.style.width = `${confidence}%`;
+            confidenceText.textContent = `Confidence: ${confidence}%`;
+            
+            const freqData = therapeuticFrequencies[mood];
+            frequencyValue.textContent = freqData.freq;
+            frequencyLabel.textContent = `Hz - ${freqData.name}`;
+            
+            // Update beat pattern if playing
+            if (isPlaying) {
+                startBeatGeneration(mood);
+            }
+        }
+
+        // Generate AI beat based on mood and frequency
+        function startBeatGeneration(mood) {
+            if (beatInterval) {
+                clearInterval(beatInterval);
+            }
+            
+            const freqData = therapeuticFrequencies[mood];
+            const stepDuration = (60 / freqData.bpm / 2) * 1000; // Convert to milliseconds
+            
+            currentStep = 0;
+            beatInterval = setInterval(() => {
+                const volume = freqData.pattern[currentStep % freqData.pattern.length];
+                
+                if (volume > 0) {
+                    playBeatNote(freqData.freq, volume);
+                }
+                
+                currentStep++;
+            }, stepDuration);
+        }
+
+        // Play individual beat note
+        function playBeatNote(frequency, volume) {
+            if (!audioContext) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            const filter = audioContext.createBiquadFilter();
+            
+            // Configure oscillator
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+            
+            // Configure filter for warmth
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(frequency * 2, audioContext.currentTime);
+            filter.Q.setValueAtTime(1, audioContext.currentTime);
+            
+            // Configure envelope
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(volume * 0.3, audioContext.currentTime + 0.01);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.5);
+            
+            // Connect audio graph
+            oscillator.connect(filter);
+            filter.connect(gainNode);
+            gainNode.connect(masterGain);
+            
+            // Start and stop
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        // Generate therapeutic response
+        function generateResponse(userMessage, mood) {
+            const responses = {
+                angry: [
+                    "I can detect elevated stress indicators in your message. I've initiated a 396Hz liberation frequency beat pattern at 60 BPM to help process these intense emotions. This frequency is specifically designed to transform negative energy. What specific situation is causing this frustration?",
+                    "Your message shows signs of significant agitation. The AI beat generator is now playing a therapeutic 396Hz pattern designed to promote emotional release. This frequency helps break down energetic blockages. Would you like to discuss what triggered these feelings?",
+                    "I'm sensing considerable tension in your communication. I've activated a calming 396Hz beat sequence that works on a neurological level to reduce cortisol production. Let's work through this systematically - what's the primary source of your anger?"
+                ],
+                sad: [
+                    "I'm detecting melancholic patterns in your language. I've started a gentle 528Hz love frequency beat at 72 BPM - this is scientifically shown to promote serotonin production and emotional healing. You don't have to carry this weight alone. What's contributing to these feelings?",
+                    "Your message indicates emotional distress. The AI system is now generating a therapeutic 528Hz beat pattern designed to activate the parasympathetic nervous system and promote emotional balance. I'm here to support you through this. What's been weighing on your mind?",
+                    "I can sense the heaviness in your words. The 528Hz love frequency I'm playing has been shown to repair DNA and promote emotional healing at a cellular level. This beat pattern is specifically calibrated for your current emotional state. What's causing this sadness?"
+                ],
+                anxious: [
+                    "I'm detecting anxiety markers in your communication patterns. I've activated a 432Hz harmony frequency beat at 80 BPM - this frequency naturally synchronizes with your nervous system to reduce anxiety. Try focusing on the rhythm while we talk. What's triggering these anxious thoughts?",
+                    "Your message shows elevated stress indicators. The AI beat generator is now playing a 432Hz therapeutic sequence designed to regulate your autonomic nervous system. This frequency helps ground racing thoughts. Let's address what's causing this anxiety step by step.",
+                    "I can sense heightened worry in your message. The 432Hz harmony frequency I'm playing resonates with natural earth frequencies to promote calm. The beat pattern is designed to slow your heart rate naturally. What specific concerns are overwhelming you right now?"
+                ],
+                happy: [
+                    "I'm detecting positive emotional indicators in your message. I've activated an uplifting 741Hz expression frequency beat at 120 BPM to amplify and sustain these positive neural pathways. This frequency enhances creative expression and joy. What's bringing you this happiness?",
+                    "Your message radiates positive energy. The AI system is generating a 741Hz beat pattern designed to enhance dopamine production and maintain elevated mood states. This frequency supports emotional expression and creativity. Tell me more about what's creating this joy.",
+                    "I can sense genuine happiness in your communication. The 741Hz expression frequency I'm playing helps maintain positive emotional states and enhances self-expression. The beat pattern is calibrated to support sustained well-being. What's the source of this wonderful energy?"
+                ],
+                calm: [
+                    "I'm detecting peaceful emotional indicators in your message. I've initiated a gentle 528Hz love frequency beat at 60 BPM to maintain and deepen this tranquil state. This frequency promotes cellular harmony and emotional balance. How are you cultivating this inner peace?",
+                    "Your message reflects a centered emotional state. The AI beat generator is playing a soft 528Hz therapeutic pattern designed to sustain parasympathetic nervous system activation. This frequency supports deep relaxation and emotional equilibrium. What practices help you maintain this calm?",
+                    "I can sense genuine tranquility in your words. The 528Hz love frequency I'm playing helps maintain optimal brainwave states for peace and clarity. The beat pattern is designed to support sustained calm. What's contributing to this beautiful sense of balance?"
+                ],
+                neutral: [
+                    "Thank you for sharing with me. I've initiated a balanced 528Hz love frequency beat at 80 BPM to create an optimal therapeutic environment. This frequency promotes overall well-being and emotional stability. How can I best support you today?",
+                    "I appreciate your openness in communicating with me. The AI system is generating a neutral 528Hz beat pattern designed to maintain emotional equilibrium while we talk. This frequency creates an ideal foundation for therapeutic conversation. What's on your mind?",
+                    "I'm here to provide support and guidance. The 528Hz love frequency I'm playing creates a harmonious backdrop for our conversation, promoting clarity and emotional balance. The beat pattern adapts to your needs. How are you feeling right now?"
+                ]
+            };
+            
+            const moodResponses = responses[mood] || responses.neutral;
+            return moodResponses[Math.floor(Math.random() * moodResponses.length)];
+        }
+
+        // Toggle audio system
+        function toggleAudio() {
+            const playButton = document.getElementById('playButton');
+            
+            if (!isPlaying) {
+                initAudio();
+                isPlaying = true;
+                playButton.textContent = 'Stop';
+                
+                startBeatGeneration(currentMood);
+            } else {
+                isPlaying = false;
+                playButton.textContent = 'Play';
+                
+                if (beatInterval) {
+                    clearInterval(beatInterval);
+                    beatInterval = null;
+                }
+            }
+        }
+
+        // Volume control
+        document.getElementById('volumeSlider').addEventListener('input', function(e) {
+            const volume = e.target.value;
+            document.getElementById('volumeDisplay').textContent = volume;
+            
+            if (masterGain) {
+                masterGain.gain.value = volume / 500; // Keep volume reasonable
+            }
+        });
+
+        // Auto-resize textarea
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+        }
+
+        // Send message function
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addMessage(message, 'user');
+            input.value = '';
+            input.style.height = 'auto';
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            // Analyze sentiment
+            const sentiment = analyzeSentiment(message);
+            updateMoodDisplay(sentiment.mood, sentiment.confidence);
+            
+            // Generate and show bot response
+            setTimeout(() => {
+                hideTypingIndicator();
+                const response = generateResponse(message, sentiment.mood);
+                addMessage(response, 'bot');
+            }, 2000);
+        }
+
+        // Quick message function
+        function sendQuickMessage(message) {
+            const input = document.getElementById('chatInput');
+            input.value = message;
+            sendMessage();
+        }
+
+        // Add message to chat
+        function addMessage(message, sender) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            messageDiv.textContent = message;
+            messagesContainer.appendChild(messageDiv);
+            
+            // Smooth scroll to bottom
+            setTimeout(() => {
+                messagesContainer.scrollTo({
+                    top: messagesContainer.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }, 100);
+        }
+
+        // Show/hide typing indicator
+        function showTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            indicator.style.display = 'block';
+            const messagesContainer = document.getElementById('chatMessages');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            indicator.style.display = 'none';
+        }
+
+        // Event listeners
+        document.getElementById('chatInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        document.getElementById('chatInput').addEventListener('input', function(e) {
+            autoResize(e.target);
+        });
+
+        // Initialize
+        updateMoodDisplay('neutral', 85);
+        initWaveform();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9947ecd397e2df69',t:'MTc2MTQ2MDQzNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
