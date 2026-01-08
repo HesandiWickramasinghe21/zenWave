@@ -1,7 +1,9 @@
 **Zenwave**
+
 AI-Powered Emotional Wellness System
 
 **Project Overview**
+
 ZenWave is an AI-driven wellness platform that detects user emotions through text input and responds with adaptive sound therapy, guided exercises, and supportive chatbot conversations to reduce stress and improve emotional balance.
 
 **Key Features**
