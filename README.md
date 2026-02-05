@@ -1,45 +1,16 @@
-**Zenwave**
+# zenwaveproject
 
-AI-Powered Emotional Wellness System
+A new Flutter project.
 
-**Project Overview**
+## Getting Started
 
-ZenWave is an AI-driven wellness platform that detects user emotions through text input and responds with adaptive sound therapy, guided exercises, and supportive chatbot conversations to reduce stress and improve emotional balance.
+This project is a starting point for a Flutter application.
 
-**Key Features**
-- Emotion & sentiment detection using NLP
-- AI chatbot for emotional support
-- Adaptive soundscape generation
-- Guided breathing, grounding & body scan exercises
-- Journaling and session history
+A few resources to get you started if this is your first Flutter project:
 
-**Technologies Used**
-1. **Frontend**
-- HTML, CSS, JavaScript
-- React.js
-- Figma (UI/UX design)
+- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
+- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
 
-2. **Backend**
-- Node.js, Express.js
-- Python (AI & audio processing)
-
-3. **AI & Sound**
-- Transformer-based sentiment models
-- Tone.js / Librosa / PyDub
-
-4. **Database**
-- Firebase / MongoDB / SQLite
-
-**Team Roles**
-- Project Lead & Documentation - Onila Wedikkara 
-- Frontend Developer - Hesandi Wickramasinghe
-- Backend Developer - K.Shangopithasarma 
-- AI & Sentiment Engineer - Dulanmi Athapattu
-- Database Engineer - Umaya De Sliva
-- Branding & Deployment Lead - Mohamed Sharan
-
-**Development Methodology**
-- Agile (iterative development)
-- OOAD for system design
-- GitHub-based collaboration with branches
-
+For help getting started with Flutter development, view the
+[online documentation](https://docs.flutter.dev/), which offers tutorials,
+samples, guidance on mobile development, and a full API reference.
