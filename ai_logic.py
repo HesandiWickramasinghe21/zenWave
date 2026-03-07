@@ -1,6 +1,7 @@
 import os
 import requests
 import time
+import random
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -26,25 +27,40 @@ def analyze_sentiment(text):
 
 def get_chatbot_response(text, emotion):
     text_clean = text.lower().strip()
-    greetings = ["hi", "hello", "hey", "hola", "good morning", "good evening"]
     
+    # 1. Randomized Greetings
+    greetings = ["hi", "hello", "hey", "hola", "good morning", "good evening"]
     if text_clean in greetings:
-        return "Hello! I'm ZenWave, your personal space for calm. How is your heart feeling today?"
+        replies = [
+            "Hello! I'm ZenWave, your personal space for calm. How is your heart feeling today?",
+            "Hi there! I'm ZenWave. I'm here to listen—what's on your mind?",
+            "Welcome back. I'm ZenWave. How has your energy been today?"
+        ]
+        return random.choice(replies)
 
-    if emotion == "CRISIS":
-        return "I'm concerned. Please reach out to a professional or a crisis hotline immediately. Your safety is my priority."
-
-    # NEW: Specific Empathy Logic for Commitment 8
+    # 2. Dynamic Empathy for Emotions
     if emotion == "STRESSED":
-        return "I can feel that things are heavy for you right now. It's okay to feel overwhelmed. I'm here to listen—take all the time you need."
+        st_replies = [
+            "I can feel that things are heavy for you right now. It's okay to feel overwhelmed.",
+            "That sounds like a lot to carry. I'm right here with you—take a deep breath.",
+            "I hear how much pressure you're under. Let's take this one step at a time."
+        ]
+        return random.choice(st_replies)
     
     if emotion == "JOY":
-        return "That is wonderful! It's so important to lean into these moments of light. What feels best about this for you?"
+        joy_replies = [
+            "That is wonderful! It's so important to lean into these moments of light.",
+            "I love hearing that! What's the best part of this feeling for you?",
+            "That's amazing news. Thank you for sharing that spark of joy with me!"
+        ]
+        return random.choice(joy_replies)
 
-    # Existing AI Logic with Retries
+    # 3. Enhanced AI Call with "System Role"
     for attempt in range(3):
         try:
-            prompt = f"As a calm mental health assistant, reply to: {text}"
+            # We wrap the user text in a 'Role' to make the AI behave better
+            prompt = f"Context: You are ZenWave, a highly empathetic and professional wellness assistant. User says: {text}. ZenWave:"
+            
             response = requests.post(API_URL, headers=headers, json={"inputs": prompt}, timeout=10)
             output = response.json()
             
@@ -54,12 +70,12 @@ def get_chatbot_response(text, emotion):
                 
             if isinstance(output, list) and len(output) > 0:
                 full_reply = output[0].get('generated_text', "")
-                return full_reply.replace(prompt, "").strip() or "I hear you. Tell me more."
+                # Clean the response so it doesn't repeat the prompt
+                clean_reply = full_reply.split("ZenWave:")[-1].strip()
+                return clean_reply if clean_reply else "I'm listening. Tell me more."
             
-            if isinstance(output, dict) and 'generated_text' in output:
-                return output['generated_text']
-
         except Exception as e:
             return f"Backend Error: {str(e)}"
             
-    return "I'm here for you. It sounds like you've had a lot on your mind lately."
+    return "I'm here for you. Tell me more about what you're experiencing."
+
