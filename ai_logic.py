@@ -10,8 +10,8 @@ HF_TOKEN = os.getenv("HF_TOKEN")
 API_URL = "https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill"
 headers = {"Authorization": f"Bearer {HF_TOKEN}"}
 
-# --- NEW: Conversation Memory (Commit 17) ---
-# This list stays in the server's RAM to remember the last few messages
+# --- NEW: Conversation Memory ---
+# This list stores the last few messages so the AI stays on track
 conversation_history = []
 
 def analyze_sentiment(text):
@@ -29,52 +29,42 @@ def analyze_sentiment(text):
     return "NEUTRAL"
 
 def get_chatbot_response(text, emotion):
-    global conversation_history # Tell Python to use the memory list
-    
+    global conversation_history
     text_clean = text.lower().strip()
     
-    # 1. Randomized Greetings
+    # 1. Handle Greetings (Fast response)
     greetings = ["hi", "hello", "hey", "hola", "good morning", "good evening"]
     if text_clean in greetings:
         replies = [
             "Hello! I'm ZenWave, your personal space for calm. How is your heart feeling today?",
             "Hi there! I'm ZenWave. I'm here to listen—what's on your mind?",
-            "Welcome back. I'm ZenWave. How has your energy been today?"
+            "Welcome back. How has your energy been today?"
         ]
         return random.choice(replies)
 
-    # 2. Dynamic Empathy for Emotions
+    # 2. Emotional Support Layer
     if emotion == "STRESSED":
-        st_replies = [
-            "I can feel that things are heavy for you right now. It's okay to feel overwhelmed.",
-            "That sounds like a lot to carry. I'm right here with you—take a deep breath.",
-            "I hear how much pressure you're under. Let's take this one step at a time."
-        ]
-        return random.choice(st_replies)
+        return "I can feel that things are heavy for you right now. I'm right here with you—take a deep breath."
     
     if emotion == "JOY":
-        joy_replies = [
-            "That is wonderful! It's so important to lean into these moments of light.",
-            "I love hearing that! What's the best part of this feeling for you?",
-            "That's amazing news. Thank you for sharing that spark of joy with me!"
-        ]
-        return random.choice(joy_replies)
+        return "That is wonderful! I love hearing that. What's the best part of this feeling for you?"
 
-    # 3. Memory Logic: Add current message to history
+    # 3. AI Memory Logic (Commit 17)
+    # Add the current user message to the memory
     conversation_history.append(f"User: {text}")
     
-    # Keep history short (last 4 lines) so the AI doesn't get confused
+    # Keep only the last 4 messages to prevent the AI from getting confused
     if len(conversation_history) > 4:
         conversation_history.pop(0)
 
-    # Combine history into one block of text for the AI
+    # Combine memory into a single prompt for the AI
     context_string = "\n".join(conversation_history)
 
-    # 4. Enhanced AI Call with Context
+    # 4. AI API Call with Context
     for attempt in range(3):
         try:
-            # We send the history (context) instead of just the latest message
-            prompt = f"Context: You are ZenWave, a highly empathetic wellness assistant. History:\n{context_string}\nZenWave:"
+            # We send the history so the AI knows what was said before
+            prompt = f"Context: You are ZenWave, an empathetic wellness bot. History:\n{context_string}\nZenWave:"
             
             response = requests.post(API_URL, headers=headers, json={"inputs": prompt}, timeout=10)
             output = response.json()
@@ -89,7 +79,7 @@ def get_chatbot_response(text, emotion):
                 
                 final_text = clean_reply if clean_reply else "I'm listening. Tell me more."
                 
-                # Add AI's own reply to its memory
+                # Add the AI's response to memory too
                 conversation_history.append(f"ZenWave: {final_text}")
                 return final_text
             
