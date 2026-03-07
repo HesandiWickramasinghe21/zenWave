@@ -10,24 +10,27 @@ HF_TOKEN = os.getenv("HF_TOKEN")
 API_URL = "https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill"
 headers = {"Authorization": f"Bearer {HF_TOKEN}"}
 
+# --- NEW: Conversation Memory (Commit 17) ---
+# This list stays in the server's RAM to remember the last few messages
+conversation_history = []
+
 def analyze_sentiment(text):
     text_lower = text.lower()
     
-    # Crisis Check - Always check this first for safety
     if any(word in text_lower for word in ["hurt", "die", "kill", "suicide", "help"]):
         return "CRISIS"
     
-    # JOY: Added "amazing", "excited", "love" to make it smarter
     if any(w in text_lower for w in ["happy", "good", "great", "joy", "proud", "amazing", "excited", "love", "wonderful"]): 
         return "JOY"
     
-    # STRESSED: Added "lonely", "anxious", "angry", "exhausted" for better detection
     if any(w in text_lower for w in ["sad", "sick", "overwhelmed", "stress", "hard", "tired", "lonely", "anxious", "angry", "exhausted"]): 
         return "STRESSED"
     
     return "NEUTRAL"
 
 def get_chatbot_response(text, emotion):
+    global conversation_history # Tell Python to use the memory list
+    
     text_clean = text.lower().strip()
     
     # 1. Randomized Greetings
@@ -57,11 +60,21 @@ def get_chatbot_response(text, emotion):
         ]
         return random.choice(joy_replies)
 
-    # 3. Enhanced AI Call with "System Role"
+    # 3. Memory Logic: Add current message to history
+    conversation_history.append(f"User: {text}")
+    
+    # Keep history short (last 4 lines) so the AI doesn't get confused
+    if len(conversation_history) > 4:
+        conversation_history.pop(0)
+
+    # Combine history into one block of text for the AI
+    context_string = "\n".join(conversation_history)
+
+    # 4. Enhanced AI Call with Context
     for attempt in range(3):
         try:
-            # We wrap the user text in a 'Role' to make the AI behave better
-            prompt = f"Context: You are ZenWave, a highly empathetic and professional wellness assistant. User says: {text}. ZenWave:"
+            # We send the history (context) instead of just the latest message
+            prompt = f"Context: You are ZenWave, a highly empathetic wellness assistant. History:\n{context_string}\nZenWave:"
             
             response = requests.post(API_URL, headers=headers, json={"inputs": prompt}, timeout=10)
             output = response.json()
@@ -72,9 +85,13 @@ def get_chatbot_response(text, emotion):
                 
             if isinstance(output, list) and len(output) > 0:
                 full_reply = output[0].get('generated_text', "")
-                # Clean the response so it doesn't repeat the prompt
                 clean_reply = full_reply.split("ZenWave:")[-1].strip()
-                return clean_reply if clean_reply else "I'm listening. Tell me more."
+                
+                final_text = clean_reply if clean_reply else "I'm listening. Tell me more."
+                
+                # Add AI's own reply to its memory
+                conversation_history.append(f"ZenWave: {final_text}")
+                return final_text
             
         except Exception as e:
             return f"Backend Error: {str(e)}"
