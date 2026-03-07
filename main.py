@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import requests  # Import this to talk to the other backend
+import requests  
 from ai_logic import analyze_sentiment, get_chatbot_response
 
 app = FastAPI()
@@ -19,7 +19,7 @@ MOOD_DB_URL = "http://127.0.0.1:5000/add_mood"
 
 class UserMessage(BaseModel):
     text: str
-    user_id: str = "student_user_1" # Added a default user_id for the database
+    user_id: str = "student_user_1" 
 
 @app.post("/chat")
 async def chat_endpoint(message: UserMessage):
@@ -29,19 +29,7 @@ async def chat_endpoint(message: UserMessage):
     # 2. Get AI response 
     reply = get_chatbot_response(message.text, emotion)
     
-    # 3. NEW: Send data to the Mood History Backend (Commit 17 Logic)
-    try:
-        # We calculate a score based on the emotion
-        score_map = {"JOY": 5, "NEUTRAL": 3, "STRESSED": 1, "CRISIS": 0}
-        
-        payload = {
-            "user_id": message.user_id,
-            "mood": emotion,
-            "score": score_map.get(emotion, 3),
-            "note": message.text[:50] # Save the first 50 characters as a note
-        }
-        
-    #4. Return results to Flutter with a sound suggestion
+    # 3. Sound mapping for the response
     sound_suggestions = {
         "JOY": "https://zenwave.com/sounds/happy.mp3",
         "STRESSED": "https://zenwave.com/sounds/ocean.mp3",
@@ -49,23 +37,27 @@ async def chat_endpoint(message: UserMessage):
         "NEUTRAL": "https://zenwave.com/sounds/ambient.mp3"
     }
 
-    return {
-        "reply": reply,
-        "emotion": emotion,
-        "recommended_sound": sound_suggestions.get(emotion, "ambient.mp3")
-    }
-    
+    # 4. Sync with teammate's Flask/MongoDB backend
+    try:
+        score_map = {"JOY": 5, "NEUTRAL": 3, "STRESSED": 1, "CRISIS": 0}
+        payload = {
+            "user_id": message.user_id,
+            "mood": emotion,
+            "score": score_map.get(emotion, 3),
+            "note": message.text[:50] 
+        }
         # This sends the data to the Flask server (Port 5000)
         requests.post(MOOD_DB_URL, json=payload, timeout=2)
         print(f"Successfully logged {emotion} to Mood Database")
         
     except Exception as e:
-        print(f"Failed to connect to Mood Backend: {e}")
+        print(f"Connection to Mood Backend failed: {e}")
     
-    # 4. Return results to Flutter
+    # 5. Final combined return for Flutter
     return {
         "reply": reply,
-        "emotion": emotion
+        "emotion": emotion,
+        "recommended_sound": sound_suggestions.get(emotion, "https://zenwave.com/sounds/ambient.mp3")
     }
 
 if __name__ == "__main__":
