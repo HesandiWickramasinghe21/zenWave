@@ -25,27 +25,38 @@ def analyze_sentiment(text):
     return "NEUTRAL"
 
 def get_chatbot_response(text, emotion):
-    if emotion == "CRISIS":
-        return "I'm concerned. Please reach out to a professional or a crisis hotline immediately."
+    # Professional Greeting Handler
+    text_clean = text.lower().strip()
+    greetings = ["hi", "hello", "hey", "hola", "good morning", "good evening"]
+    
+    if text_clean in greetings:
+        return "Hello! I'm ZenWave, your personal space for calm. How is your heart feeling today?"
 
-    # Try up to 3 times in case the model is still loading
+    if emotion == "CRISIS":
+        return "I'm concerned. Please reach out to a professional or a crisis hotline immediately. Your safety is my priority."
+
+    # Existing AI Logic with Retries
     for attempt in range(3):
         try:
-            response = requests.post(API_URL, headers=headers, json={"inputs": text}, timeout=10)
+            # We add a 'personality' hint to the input
+            prompt = f"As a calm mental health assistant, reply to: {text}"
+            response = requests.post(API_URL, headers=headers, json={"inputs": prompt}, timeout=10)
             output = response.json()
             
-            # If model is loading, wait and try again
             if isinstance(output, dict) and "estimated_time" in output:
                 time.sleep(2)
                 continue
                 
             if isinstance(output, list) and len(output) > 0:
-                return output[0].get('generated_text', "I'm listening.")
+                full_reply = output[0].get('generated_text', "")
+                # Remove the prompt from the AI response if it appears
+                return full_reply.replace(prompt, "").strip() or "I hear you. Tell me more."
             
             if isinstance(output, dict) and 'generated_text' in output:
                 return output['generated_text']
 
         except Exception as e:
-        # This will tell us if it's a timeout, a bad token, or something else
-        return f"Backend Error: {str(e)}"
-        
+            return f"Backend Error: {str(e)}"
+            
+    return "I'm here for you. It sounds like you've had a lot on your mind lately."
+
