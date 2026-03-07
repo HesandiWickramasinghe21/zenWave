@@ -41,6 +41,20 @@ async def chat_endpoint(message: UserMessage):
             "note": message.text[:50] # Save the first 50 characters as a note
         }
         
+    #4. Return results to Flutter with a sound suggestion
+    sound_suggestions = {
+        "JOY": "https://zenwave.com/sounds/happy.mp3",
+        "STRESSED": "https://zenwave.com/sounds/ocean.mp3",
+        "CRISIS": "https://zenwave.com/sounds/support.mp3",
+        "NEUTRAL": "https://zenwave.com/sounds/ambient.mp3"
+    }
+
+    return {
+        "reply": reply,
+        "emotion": emotion,
+        "recommended_sound": sound_suggestions.get(emotion, "ambient.mp3")
+    }
+    
         # This sends the data to the Flask server (Port 5000)
         requests.post(MOOD_DB_URL, json=payload, timeout=2)
         print(f"Successfully logged {emotion} to Mood Database")
