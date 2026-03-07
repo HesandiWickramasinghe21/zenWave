@@ -13,14 +13,16 @@ headers = {"Authorization": f"Bearer {HF_TOKEN}"}
 def analyze_sentiment(text):
     text_lower = text.lower()
     
-    # Crisis Check
+    # Crisis Check - Always check this first for safety
     if any(word in text_lower for word in ["hurt", "die", "kill", "suicide", "help"]):
         return "CRISIS"
     
-    # Enhanced Keywords for your specific tests
-    if any(w in text_lower for w in ["happy", "good", "great", "joy", "proud"]): 
+    # JOY: Added "amazing", "excited", "love" to make it smarter
+    if any(w in text_lower for w in ["happy", "good", "great", "joy", "proud", "amazing", "excited", "love", "wonderful"]): 
         return "JOY"
-    if any(w in text_lower for w in ["sad", "sick", "overwhelmed", "stress", "hard", "rest", "tired"]): 
+    
+    # STRESSED: Added "lonely", "anxious", "angry", "exhausted" for better detection
+    if any(w in text_lower for w in ["sad", "sick", "overwhelmed", "stress", "hard", "tired", "lonely", "anxious", "angry", "exhausted"]): 
         return "STRESSED"
     
     return "NEUTRAL"
@@ -78,4 +80,3 @@ def get_chatbot_response(text, emotion):
             return f"Backend Error: {str(e)}"
             
     return "I'm here for you. Tell me more about what you're experiencing."
-
