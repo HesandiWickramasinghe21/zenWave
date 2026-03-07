@@ -25,7 +25,6 @@ def analyze_sentiment(text):
     return "NEUTRAL"
 
 def get_chatbot_response(text, emotion):
-    # Professional Greeting Handler
     text_clean = text.lower().strip()
     greetings = ["hi", "hello", "hey", "hola", "good morning", "good evening"]
     
@@ -35,10 +34,16 @@ def get_chatbot_response(text, emotion):
     if emotion == "CRISIS":
         return "I'm concerned. Please reach out to a professional or a crisis hotline immediately. Your safety is my priority."
 
+    # NEW: Specific Empathy Logic for Commitment 8
+    if emotion == "STRESSED":
+        return "I can feel that things are heavy for you right now. It's okay to feel overwhelmed. I'm here to listen—take all the time you need."
+    
+    if emotion == "JOY":
+        return "That is wonderful! It's so important to lean into these moments of light. What feels best about this for you?"
+
     # Existing AI Logic with Retries
     for attempt in range(3):
         try:
-            # We add a 'personality' hint to the input
             prompt = f"As a calm mental health assistant, reply to: {text}"
             response = requests.post(API_URL, headers=headers, json={"inputs": prompt}, timeout=10)
             output = response.json()
@@ -49,7 +54,6 @@ def get_chatbot_response(text, emotion):
                 
             if isinstance(output, list) and len(output) > 0:
                 full_reply = output[0].get('generated_text', "")
-                # Remove the prompt from the AI response if it appears
                 return full_reply.replace(prompt, "").strip() or "I hear you. Tell me more."
             
             if isinstance(output, dict) and 'generated_text' in output:
@@ -59,4 +63,3 @@ def get_chatbot_response(text, emotion):
             return f"Backend Error: {str(e)}"
             
     return "I'm here for you. It sounds like you've had a lot on your mind lately."
-
