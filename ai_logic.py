@@ -16,10 +16,10 @@ headers = {"Authorization": f"Bearer {HF_TOKEN}"}
 conversation_history: List[str] = []
 
 def analyze_sentiment(text: str) -> str:
-    \"\"\"
+    """
     Analyzes user input to categorize the emotional state.
     Returns: 'CRISIS', 'JOY', 'STRESSED', or 'NEUTRAL'.
-    \"\"\"
+    """
     text_lower = text.lower()
     
     # Priority 1: Safety/Crisis detection
@@ -37,58 +37,35 @@ def analyze_sentiment(text: str) -> str:
     return "NEUTRAL"
 
 def get_chatbot_response(text: str, emotion: str) -> str:
-    \"\"\"
-    Generates a contextual response using a hybrid of 
-    rule-based empathy and AI-generated dialogue.
-    \"\"\"
     global conversation_history
-    text_clean = text.lower().strip()
     
-    # --- Layer 1: Rule-Based Fast Response ---
-    greetings = ["hi", "hello", "hey", "hola", "good morning", "good evening"]
-    if text_clean in greetings:
-        return random.choice([
-            "Hello! I'm ZenWave, your personal space for calm. How is your heart feeling today?",
-            "Hi there! I'm ZenWave. I'm here to listen—what's on your mind?",
-            "Welcome back. How has your energy been today?"
-        ])
-
-    # --- Layer 2: Emotional Intelligence Layer ---
-    if emotion == "STRESSED":
-        return "I can feel that things are heavy for you right now. I'm right here with you—take a deep breath."
-    
-    if emotion == "JOY":
-        return "That is wonderful! I love hearing that. What's the best part of this feeling for you?"
-
-    # --- Layer 3: AI Contextual Dialogue ---
+    # 1. Store history
     conversation_history.append(f"User: {text}")
-    
-    # Maintain sliding window of 4 messages for context stability
-    if len(conversation_history) > 4:
+    if len(conversation_history) > 6:
         conversation_history.pop(0)
 
     context_string = "\n".join(conversation_history)
 
+    # 2. PROMPT ENGINEERING: Tell the AI the detected emotion
+    # This makes the AI "think" and analyze the mood specifically
+    prompt = (
+        f"System: You are ZenWave, a deeply empathetic mental health counselor. "
+        f"The user is currently feeling {emotion}. "
+        f"Conversation History:\n{context_string}\n"
+        f"ZenWave: [Respond with deep empathy and ask a helpful question]"
+    )
+
     for attempt in range(3):
         try:
-            prompt = f"Context: You are ZenWave, an empathetic wellness bot. History:\n{context_string}\nZenWave:"
             response = requests.post(API_URL, headers=headers, json={"inputs": prompt}, timeout=10)
             output = response.json()
             
-            # Handle model loading time
-            if isinstance(output, dict) and "estimated_time" in output:
-                time.sleep(2)
-                continue
-                
             if isinstance(output, list) and len(output) > 0:
                 full_reply = output[0].get('generated_text', "")
+                # Clean up the AI reply
                 clean_reply = full_reply.split("ZenWave:")[-1].strip()
-                
-                final_text = clean_reply if clean_reply else "I'm listening. Tell me more."
-                conversation_history.append(f"ZenWave: {final_text}")
-                return final_text
-            
+                return clean_reply
         except Exception as e:
-            return f"Service currently unavailable: {str(e)}"
+            continue
             
-    return "I'm here for you. Tell me more about what you're experiencing."
+    return "I'm processing what you've shared. I'm here to listen—please tell me more."
