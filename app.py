@@ -28,14 +28,7 @@ def add_mood():
     try:
         data = request.json
         
-        # Structure the data for the database
-        new_entry = {
-            "user_id": data.get("user_id"),   # From Auth student
-            "mood_label": data.get("mood"),  # e.g., "Happy"
-            "mood_score": data.get("score"), # e.g., 5
-            "note": data.get("note", ""),    # Optional text
-            "timestamp": datetime.now()      # Automatic time
-        }
+        
         
         result = mood_collection.insert_one(new_entry)
         return jsonify({
