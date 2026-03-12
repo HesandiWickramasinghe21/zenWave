@@ -7,7 +7,15 @@ from datetime import datetime
 app = Flask(__name__)
 CORS(app)  # This allows your Flutter app to connect to this server
 
-
+# 2. Database Connection
+# Note: Replace 'localhost' with the URI your teammate provides later
+try:
+    client = MongoClient("mongodb://localhost:27017/")
+    db = client['zenwave_db']
+    mood_collection = db['mood_history']
+    print("Connected to MongoDB successfully!")
+except Exception as e:
+    print(f"Database connection error: {e}")
 
 # 3. Home Route (To check if backend is alive)
 @app.route('/')
