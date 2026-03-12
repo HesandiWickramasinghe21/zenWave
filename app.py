@@ -49,7 +49,21 @@ def add_mood():
 # 5. Get History Route (The GET method for your charts)
 @app.route('/get_history/<user_id>', methods=['GET'])
 def get_history(user_id):
-    
+    try:
+        # Find last 10 entries for a specific user
+        cursor = mood_collection.find({"user_id": user_id}).sort("timestamp", -1).limit(10)
+        
+        history = []
+        for entry in cursor:
+            history.append({
+                "mood": entry["mood_label"],
+                "score": entry["mood_score"],
+                "date": entry["timestamp"].strftime("%Y-%m-%d %H:%M")
+            })
+            
+        return jsonify(history), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # 6. Run the server
 if __name__ == '__main__':
