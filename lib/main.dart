@@ -15,7 +15,9 @@ class ZenWaveApp extends StatelessWidget {
       title: 'ZenWave',
       theme: ThemeData(
         useMaterial3: true,
-        
+        // This sets the default color for your app
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color.fromARGB(255, 220, 20, 251),
         ),
       ),
       // This tells the app to open the Signup screen immediately
