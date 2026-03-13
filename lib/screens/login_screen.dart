@@ -56,24 +56,9 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(height: 30),
 
-            _buildTextField(
-              "Full Name",
-              "Enter your username",
-              Icons.person_outline,
-            ),
-            _buildTextField("Email", "Enter your e-mail", Icons.email_outlined),
+            _
 
-            const Row(
-              children: [
-                Expanded(child: Divider()),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 10),
-                  child: Text("or", style: TextStyle(color: Colors.grey)),
-                ),
-                Expanded(child: Divider()),
-              ],
-            ),
-            const SizedBox(height: 15),
+            
 
             _buildTextField(
               "Phone Number",
