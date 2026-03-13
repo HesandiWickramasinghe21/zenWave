@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
- // This links your new signup file
+import 'screens/signup_screen.dart'; // This links your new signup file
 
 void main() {
   runApp(const ZenWaveApp());
@@ -17,7 +17,7 @@ class ZenWaveApp extends StatelessWidget {
         useMaterial3: true,
         // This sets the default color for your app
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color.fromARGB(255, 220, 20, 251),
+          seedColor: const Color.fromARGB(255, 221, 16, 253),
         ),
       ),
       // This tells the app to open the Signup screen immediately
