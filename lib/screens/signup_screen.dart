@@ -12,23 +12,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
   String? _selectedGender;
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-
-      initialDate: DateTime.now().subtract(const Duration(days: 6570)),
-
-      firstDate: DateTime(1900),
-
-      lastDate: DateTime.now(),
-    );
-
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-      });
-    }
-  }
+  Future<void> _selectDate(BuildContext context) async 
 
   Widget _buildTextField(
     String label,
