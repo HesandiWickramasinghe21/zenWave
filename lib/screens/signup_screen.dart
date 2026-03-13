@@ -35,7 +35,35 @@ class _SignupScreenState extends State<SignupScreen> {
     String hint,
     IconData icon, {
     bool isPassword = false,
-  }) 
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+
+      children: [
+        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+
+        const SizedBox(height: 8),
+
+        TextField(
+          obscureText: isPassword,
+
+          decoration: InputDecoration(
+            hintText: hint,
+
+            prefixIcon: Icon(icon),
+
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+
+            filled: true,
+
+            fillColor: Colors.white,
+          ),
+        ),
+
+        const SizedBox(height: 15),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
