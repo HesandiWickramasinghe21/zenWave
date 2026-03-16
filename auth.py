@@ -34,3 +34,28 @@ def get_auth_client() -> Client:
 
 
 # ============================================================
+# User Registration and Login Functions
+# ============================================================
+
+def register_user(email: str, password: str) -> Dict[str, Any]:
+    """
+    Register a new user with email and password.
+    
+    Args:
+        email: User's email address
+        password: User's chosen password
+    
+    Returns:
+        dict: Response containing user data or error information
+    """
+    client = get_auth_client()
+    try:
+        response = client.auth.sign_up({
+            "email": email,
+            "password": password
+        })
+        return {"success": True, "user": response.user, "session": response.session}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
