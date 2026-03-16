@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
-import 'user_profile_screen.dart'; // Import to access PaymentMethodScreen if needed
+import 'user_profile_screen.dart'; // Ensure this contains your PaymentMethodScreen
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -12,13 +12,13 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   bool _isLoading = true;
   bool _isAnnual = false;
-  String _displayName = "User";
-  String _avatarPath = "assets/avatar/avatar1.png"; // Default avatar
+  bool _isPro = false; 
+  String _displayName = "Hesandi"; // Matches image reference
+  String _avatarPath = "assets/avatar/avatar1.png";
 
-  // Signature Palette
+  // Brand Palette
   static const Color zenPurple = Color(0xFF9147FF);
   static const Color softBlue = Color(0xFFE3F2FD);
-  static const Color softGreen = Color(0xFFE8F5E9);
   static const Color softOrange = Color(0xFFFFF3E0);
   static const Color cardGrey = Color(0xFFF7F8FA);
   static const Color borderLight = Color(0xFFE5E5E5);
@@ -34,12 +34,9 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final data = await ApiService.profile();
       final String fullName = data["full_name"]?.toString().trim() ?? "";
-      
       if (!mounted) return;
-
       setState(() {
-        _displayName = fullName.isNotEmpty ? fullName.split(' ').first : "User";
-        // If your API returns an avatar index, you can update _avatarPath here
+        if (fullName.isNotEmpty) _displayName = fullName.split(' ').first;
         _isLoading = false;
       });
     } catch (e) {
@@ -59,46 +56,53 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHeader(),
+              _buildHeader(), // Matches your "Hi Hesandi" image
               const SizedBox(height: 25),
               
-              // NEW: Quick Mood Check-in
               const Text("How are you feeling?", 
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Colors.black38, letterSpacing: 1)),
               const SizedBox(height: 12),
-              _buildMoodSelector(),
+              _buildMoodSelector(), // Matches your emoji selector image
 
               const SizedBox(height: 30),
-              _buildQuoteBox(),
+              _buildQuoteBox(), // Matches your "Mind is a garden" image
 
               const SizedBox(height: 35),
               const Text("Today's Journey", 
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
               const SizedBox(height: 16),
 
-              // FEATURE TILES
               _buildDuoCard("Emotion Chat", "Talk it out", Icons.chat_bubble_rounded, Colors.orange, softOrange, '/chatbot'),
               _buildDuoCard("Sound Therapy", "Calming vibes", Icons.music_note_rounded, Colors.blue, softBlue, '/chatbot'),
               _buildDuoCard("Journaling", "Write it down", Icons.edit_note_rounded, Colors.purple, const Color(0xFFF3E5F5), '/journaling'),
               _buildDuoCard("Mood Patterns", "Track growth", Icons.insights_rounded, Colors.redAccent, const Color(0xFFFFEBEE), '/mental_health_report'),
 
               const SizedBox(height: 40),
-              const Center(child: Text("Upgrade Your Peace", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900))),
-              const SizedBox(height: 15),
-              _buildPricingToggle(),
 
-              const SizedBox(height: 25),
-              _buildLightPlanCard(
-                title: "ZEN MASTER",
-                price: _isAnnual ? "\$79.99" : "\$9.99",
-                period: _isAnnual ? "/yr" : "/mo",
-                desc: "Unlock everything. No limits.",
-                features: ["Unlimited AI Chat", "Deep Health Insights", "Offline Soundscapes"],
-                isPremium: true,
-                onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (c) => PaymentMethodScreen(email: "user@zenwave.com")));
-                },
-              ),
+              if (!_isPro) ...[
+                const Center(child: Text("Upgrade Your Peace", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900))),
+                const SizedBox(height: 20),
+                _buildPricingToggle(),
+                const SizedBox(height: 25),
+                // Button removed: Card is now fully tappable
+                _buildTappablePlanCard(
+                  title: "ZEN MASTER",
+                  price: _isAnnual ? "\$79.99" : "\$9.99",
+                  period: _isAnnual ? "/yr" : "/mo",
+                  desc: "Unlock everything. No limits.",
+                  features: ["Unlimited AI Chat", "Deep Health Insights", "Offline Soundscapes"],
+                  isPremium: true,
+                  onTap: () async {
+                    final result = await Navigator.push(
+                      context, 
+                      MaterialPageRoute(builder: (c) => PaymentMethodScreen(email: "$_displayName@zenwave.com"))
+                    );
+                    if (result == true) setState(() => _isPro = true);
+                  },
+                ),
+              ] else ...[
+                _buildProStatusCard(),
+              ],
               const SizedBox(height: 40),
             ],
           ),
@@ -114,39 +118,42 @@ class _HomeScreenState extends State<HomeScreen> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Hi ${_isLoading ? '...' : _displayName}! 👋",
-              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, letterSpacing: -1)),
-            const Text("Ready to find your zen?",
+            Row(
+              children: [
+                Text("Hi $_displayName! 👋", //
+                  style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, letterSpacing: -1)),
+                if (_isPro)
+                  Container(
+                    margin: const EdgeInsets.only(left: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(color: const Color(0xFFFFB800), borderRadius: BorderRadius.circular(8)),
+                    child: const Text("PRO", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10)),
+                  ),
+              ],
+            ),
+            const Text("Ready to find your zen?", //
               style: TextStyle(fontSize: 16, color: Colors.black38, fontWeight: FontWeight.w600)),
           ],
         ),
-        GestureDetector(
-          onTap: () => Navigator.pushNamed(context, '/profile'),
-          child: Container(
-            padding: const EdgeInsets.all(3),
-            decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: borderLight, width: 2)),
-            child: CircleAvatar(
-              radius: 26,
-              backgroundColor: softBlue,
-              backgroundImage: AssetImage(_avatarPath), // Syncs with your avatar folder
-            ),
-          ),
+        CircleAvatar(
+          radius: 26,
+          backgroundColor: softBlue,
+          backgroundImage: AssetImage(_avatarPath),
         )
       ],
     );
   }
 
   Widget _buildMoodSelector() {
-    final moods = ["😔", "😐", "🙂", "🤩", "😴"];
+    final moods = ["😔", "😐", "🙂", "🤩", "😴"]; //
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: moods.map((m) => Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: cardGrey,
-          borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: borderLight),
-        ),
+          color: cardGrey, 
+          borderRadius: BorderRadius.circular(15), 
+          border: Border.all(color: borderLight)),
         child: Text(m, style: const TextStyle(fontSize: 24)),
       )).toList(),
     );
@@ -165,7 +172,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const Icon(Icons.tips_and_updates, color: Colors.blue, size: 32),
           const SizedBox(width: 15),
           Expanded(
-            child: Text("“Your mind is a garden. Let's plant some peace today.”",
+            child: Text("“Your mind is a garden. Let's plant some peace today.”", //
               style: TextStyle(fontSize: 15, color: Colors.blueGrey[800], fontWeight: FontWeight.w700, height: 1.3)),
           ),
         ],
@@ -229,19 +236,16 @@ class _HomeScreenState extends State<HomeScreen> {
       onTap: () => setState(() => _isAnnual = text == "Annually"),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-        decoration: BoxDecoration(
-          color: active ? zenPurple : Colors.transparent,
-          borderRadius: BorderRadius.circular(50),
-        ),
+        decoration: BoxDecoration(color: active ? zenPurple : Colors.transparent, borderRadius: BorderRadius.circular(50)),
         child: Text(text, style: TextStyle(fontWeight: FontWeight.w900, color: active ? Colors.white : Colors.black45, fontSize: 13)),
       ),
     );
   }
 
-  Widget _buildLightPlanCard({
+  Widget _buildTappablePlanCard({
     required String title, required String price, String period = "", 
     required String desc, required List<String> features, 
-    required bool isPremium, VoidCallback? onTap,
+    required bool isPremium, required VoidCallback onTap,
   }) {
     return GestureDetector(
       onTap: onTap,
@@ -250,12 +254,12 @@ class _HomeScreenState extends State<HomeScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(28),
-          border: Border.all(color: isPremium ? zenPurple : borderLight, width: 3),
-          boxShadow: [BoxShadow(color: isPremium ? const Color(0xFFD1B7FF) : borderLight, offset: const Offset(0, 6))],
+          border: Border.all(color: zenPurple, width: 3),
+          boxShadow: const [BoxShadow(color: Color(0xFFD1B7FF), offset: Offset(0, 6))],
         ),
         child: Column(
           children: [
-            Text(title, style: TextStyle(color: isPremium ? zenPurple : Colors.black45, fontWeight: FontWeight.w900, letterSpacing: 1.2)),
+            Text(title, style: const TextStyle(color: zenPurple, fontWeight: FontWeight.w900, letterSpacing: 1.2)),
             const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -265,24 +269,39 @@ class _HomeScreenState extends State<HomeScreen> {
                 Text(period, style: const TextStyle(color: Colors.grey, fontSize: 16, fontWeight: FontWeight.w900)),
               ],
             ),
-            const Divider(height: 30, thickness: 1),
+            const Divider(height: 30, thickness: 1.5),
             ...features.map((f) => Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Row(children: [
-                const Icon(Icons.check_circle, color: duoGreen, size: 20),
-                const SizedBox(width: 10),
-                Text(f, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                const Icon(Icons.check_circle, color: duoGreen, size: 22),
+                const SizedBox(width: 12),
+                Text(f, style: const TextStyle(fontWeight: FontWeight.w700)),
               ]),
             )),
-            const SizedBox(height: 15),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(color: duoGreen, borderRadius: BorderRadius.circular(15), boxShadow: const [BoxShadow(color: Color(0xFF46A302), offset: Offset(0, 4))]),
-              child: const Center(child: Text("GET STARTED", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900))),
-            )
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildProStatusCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFBF9FF),
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: zenPurple, width: 3),
+        boxShadow: const [BoxShadow(color: Color(0xFFD1B7FF), offset: Offset(0, 6))],
+      ),
+      child: Column(
+        children: const [
+          Icon(Icons.stars_rounded, color: Color(0xFFFFB800), size: 50),
+          SizedBox(height: 12),
+          Text("ZEN MASTER ACTIVE", style: TextStyle(fontWeight: FontWeight.w900, color: zenPurple, fontSize: 18)),
+          SizedBox(height: 4),
+          Text("Enjoy your unlimited experience!", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black45)),
+        ],
       ),
     );
   }
