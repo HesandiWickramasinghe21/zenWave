@@ -54,3 +54,19 @@ def save_user_mood(user_id: str, mood: str, message: str) -> dict:
     return result.data
 
 
+def get_user_mood_history(user_id: str, limit: int = 10) -> list:
+    """
+    Retrieve mood history for a specific user.
+    
+    Args:
+        user_id: Unique identifier for the user
+        limit: Maximum number of records to return (default: 10)
+    
+    Returns:
+        list: List of mood entry records
+    """
+    client = init_supabase()
+    result = client.table("mood_entries").select("*").eq("user_id", user_id).order("created_at", desc=True).limit(limit).execute()
+    return result.data
+
+
