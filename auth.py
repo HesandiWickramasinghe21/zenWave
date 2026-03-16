@@ -117,3 +117,22 @@ def get_current_user() -> Optional[Dict[str, Any]]:
         return None
 
 
+def validate_session(access_token: str) -> bool:
+    """
+    Validate if a given access token is still valid.
+    
+    Args:
+        access_token: JWT access token to validate
+    
+    Returns:
+        bool: True if token is valid, False otherwise
+    """
+    client = get_auth_client()
+    try:
+        user = client.auth.get_user(access_token)
+        return user is not None
+    except Exception:
+        return False
+
+
+# ============================================================
