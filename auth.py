@@ -136,3 +136,40 @@ def validate_session(access_token: str) -> bool:
 
 
 # ============================================================
+# Password Reset Functions  
+# ============================================================
+
+def request_password_reset(email: str) -> Dict[str, Any]:
+    """
+    Send a password reset email to the specified address.
+    
+    Args:
+        email: Email address to send reset link to
+    
+    Returns:
+        dict: Response indicating if email was sent successfully
+    """
+    client = get_auth_client()
+    try:
+        client.auth.reset_password_email(email)
+        return {"success": True, "message": "Password reset email sent"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+def update_user_password(new_password: str) -> Dict[str, Any]:
+    """
+    Update the password for the currently authenticated user.
+    
+    Args:
+        new_password: The new password to set
+    
+    Returns:
+        dict: Response indicating password update success or failure
+    """
+    client = get_auth_client()
+    try:
+        client.auth.update_user({"password": new_password})
+        return {"success": True, "message": "Password updated successfully"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
