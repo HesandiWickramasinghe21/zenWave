@@ -15,3 +15,17 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 # Initialize Supabase client
 supabase: Client = None
 
+def init_supabase() -> Client:
+    """
+    Initialize and return the Supabase client connection.
+    This function ensures a singleton pattern for the database connection.
+    """
+    global supabase
+    if supabase is None:
+        if not SUPABASE_KEY:
+            raise ValueError("SUPABASE_KEY environment variable is not set")
+        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+    return supabase
+
+
+# ============================================================
