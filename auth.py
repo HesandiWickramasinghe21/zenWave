@@ -17,3 +17,20 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 _auth_client: Client = None
 
 
+def get_auth_client() -> Client:
+    """
+    Get or create the Supabase authentication client.
+    Uses singleton pattern for efficient resource usage.
+    
+    Returns:
+        Client: Supabase client instance
+    """
+    global _auth_client
+    if _auth_client is None:
+        if not SUPABASE_KEY:
+            raise ValueError("SUPABASE_KEY must be set in environment variables")
+        _auth_client = create_client(SUPABASE_URL, SUPABASE_KEY)
+    return _auth_client
+
+
+# ============================================================
