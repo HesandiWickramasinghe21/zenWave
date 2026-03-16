@@ -70,3 +70,35 @@ def get_user_mood_history(user_id: str, limit: int = 10) -> list:
     return result.data
 
 
+def get_mood_statistics(user_id: str) -> dict:
+    """
+    Calculate mood statistics for a user.
+    
+    Args:
+        user_id: Unique identifier for the user
+    
+    Returns:
+        dict: Statistics including mood counts and percentages
+    """
+    client = init_supabase()
+    result = client.table("mood_entries").select("mood").eq("user_id", user_id).execute()
+    
+    # Calculate mood distribution
+    moods = [entry["mood"] for entry in result.data]
+    total = len(moods)
+    
+    if total == 0:
+        return {"total_entries": 0, "distribution": {}}
+    
+    distribution = {}
+    for mood in ["JOY", "STRESSED", "CRISIS", "NEUTRAL"]:
+        count = moods.count(mood)
+        distribution[mood] = {
+            "count": count,
+            "percentage": round((count / total) * 100, 2)
+        }
+    
+    return {"total_entries": total, "distribution": distribution}
+
+
+# ============================================================
