@@ -137,3 +137,27 @@ def end_chat_session(session_id: str) -> dict:
 
 
 # ============================================================
+# Sound Recommendation Tracking
+# ============================================================
+
+def log_sound_recommendation(user_id: str, mood: str, sound_url: str) -> dict:
+    """
+    Log which sound was recommended to the user based on their mood.
+    This helps track effectiveness of recommendations.
+    
+    Args:
+        user_id: Unique identifier for the user
+        mood: The detected mood that triggered the recommendation
+        sound_url: URL of the recommended sound
+    
+    Returns:
+        dict: The logged recommendation data
+    """
+    client = init_supabase()
+    data = {
+        "user_id": user_id,
+        "mood": mood,
+        "sound_url": sound_url
+    }
+    result = client.table("sound_recommendations").insert(data).execute()
+    return result.data
