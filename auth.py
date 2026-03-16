@@ -59,3 +59,25 @@ def register_user(email: str, password: str) -> Dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
+def login_user(email: str, password: str) -> Dict[str, Any]:
+    """
+    Authenticate a user with email and password credentials.
+    
+    Args:
+        email: User's email address
+        password: User's password
+    
+    Returns:
+        dict: Response containing session data or error information
+    """
+    client = get_auth_client()
+    try:
+        response = client.auth.sign_in_with_password({
+            "email": email,
+            "password": password
+        })
+        return {"success": True, "user": response.user, "session": response.session}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
