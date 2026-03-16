@@ -97,3 +97,23 @@ def logout_user() -> Dict[str, Any]:
 
 
 # ============================================================
+# Session Validation Functions
+# ============================================================
+
+def get_current_user() -> Optional[Dict[str, Any]]:
+    """
+    Retrieve the currently authenticated user's information.
+    
+    Returns:
+        dict or None: Current user data if authenticated, None otherwise
+    """
+    client = get_auth_client()
+    try:
+        user = client.auth.get_user()
+        if user:
+            return {"id": user.user.id, "email": user.user.email}
+        return None
+    except Exception:
+        return None
+
+
