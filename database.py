@@ -29,3 +29,28 @@ def init_supabase() -> Client:
 
 
 # ============================================================
+# User Mood Data Operations
+# ============================================================
+
+def save_user_mood(user_id: str, mood: str, message: str) -> dict:
+    """
+    Save a user's mood entry to the database.
+    
+    Args:
+        user_id: Unique identifier for the user
+        mood: Detected mood category (JOY, STRESSED, CRISIS, NEUTRAL)
+        message: Original user message text
+    
+    Returns:
+        dict: The inserted record data
+    """
+    client = init_supabase()
+    data = {
+        "user_id": user_id,
+        "mood": mood,
+        "message": message
+    }
+    result = client.table("mood_entries").insert(data).execute()
+    return result.data
+
+
