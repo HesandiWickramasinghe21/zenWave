@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
+import 'privacy_screen.dart';
+import 'purchase_history_screen.dart';
+import 'help_support_screen.dart';
 
 class UserProfileScreen extends StatefulWidget {
   const UserProfileScreen({super.key});
@@ -136,10 +139,34 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             ),
 
             const SizedBox(height: 35),
-            _buildMenuTile(Icons.shield_outlined, "Privacy", const Color(0xFF1CB0F6)),
-            _buildMenuTile(Icons.history, "Purchase History", Colors.black45),
-            _buildMenuTile(Icons.help_outline, "Help & Support", const Color(0xFF58CC02)),
-            _buildMenuTile(Icons.logout, "Logout", Colors.redAccent),
+            
+            _buildMenuTile(
+              icon: Icons.shield_outlined, 
+              title: "Privacy", 
+              iconColor: const Color(0xFF1CB0F6),
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const PrivacyScreen())),
+            ),
+            
+            _buildMenuTile(
+              icon: Icons.history, 
+              title: "Purchase History", 
+              iconColor: Colors.black45,
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const PurchaseHistoryScreen())),
+            ),
+            
+            _buildMenuTile(
+              icon: Icons.help_outline, 
+              title: "Help & Support", 
+              iconColor: const Color(0xFF58CC02),
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const HelpSupportScreen())),
+            ),
+            
+            _buildMenuTile(
+              icon: Icons.logout, 
+              title: "Logout", 
+              iconColor: Colors.redAccent,
+              onTap: () => Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false),
+            ),
           ],
         ),
       ),
@@ -162,16 +189,21 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
-  Widget _buildMenuTile(IconData icon, String title, Color iconColor) {
+  Widget _buildMenuTile({required IconData icon, required String title, required Color iconColor, required VoidCallback onTap}) {
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18), border: Border.all(color: const Color(0xFFE5E5E5), width: 2)),
-      child: ListTile(leading: Icon(icon, color: iconColor), title: Text(title, style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF4B4B4B))), trailing: const Icon(Icons.chevron_right, color: Colors.black12)),
+      child: ListTile(
+        onTap: onTap,
+        leading: Icon(icon, color: iconColor), 
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF4B4B4B))), 
+        trailing: const Icon(Icons.chevron_right, color: Colors.black12),
+      ),
     );
   }
 }
 
-// --- NEW PAYMENT METHOD SCREEN (Based on your image) ---
+// --- PAYMENT METHOD SCREEN ---
 class PaymentMethodScreen extends StatelessWidget {
   final String email;
   const PaymentMethodScreen({super.key, required this.email});
@@ -192,16 +224,13 @@ class PaymentMethodScreen extends StatelessWidget {
           children: [
             _sectionHeader("Credit/Debit Card"),
             _paymentTile(Icons.credit_card, "Add a Card", "Pay via Cards", context),
-            
             const SizedBox(height: 20),
             _sectionHeader("ATM/Bank Transfer"),
             _paymentTile(Icons.account_balance, "Bank Transfer", "Prima, Alto, or Others", context),
-            
             const SizedBox(height: 20),
             _sectionHeader("Wallets"),
             _paymentTile(Icons.account_balance_wallet, "Go Pay", "Instant Payment", context),
             _paymentTile(Icons.wallet_giftcard, "Other e-Wallets", "OVO, Dana, etc.", context),
-
             const SizedBox(height: 40),
             const Divider(),
             Row(
@@ -245,7 +274,7 @@ class PaymentMethodScreen extends StatelessWidget {
       builder: (context) => const Center(child: CircularProgressIndicator(color: Color(0xFF58CC02))),
     );
     Future.delayed(const Duration(seconds: 2), () {
-      Navigator.pop(context); // Close loading
+      Navigator.pop(context);
       _showSuccess(context);
     });
   }
@@ -263,11 +292,12 @@ class PaymentMethodScreen extends StatelessWidget {
             const Text("PAYMENT SUCCESS!", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
             const SizedBox(height: 20),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF58CC02)),
               onPressed: () {
                 Navigator.pop(context); // Close dialog
                 Navigator.pop(context, true); // Return true to profile
               },
-              child: const Text("DONE"),
+              child: const Text("DONE", style: TextStyle(color: Colors.white)),
             )
           ],
         ),
