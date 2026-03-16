@@ -102,3 +102,38 @@ def get_mood_statistics(user_id: str) -> dict:
 
 
 # ============================================================
+# Session Management Operations
+# ============================================================
+
+def create_chat_session(user_id: str) -> dict:
+    """
+    Create a new chat session for tracking conversation context.
+    
+    Args:
+        user_id: Unique identifier for the user
+    
+    Returns:
+        dict: The created session data including session_id
+    """
+    client = init_supabase()
+    data = {"user_id": user_id, "is_active": True}
+    result = client.table("chat_sessions").insert(data).execute()
+    return result.data
+
+
+def end_chat_session(session_id: str) -> dict:
+    """
+    Mark a chat session as ended/inactive.
+    
+    Args:
+        session_id: Unique identifier for the session
+    
+    Returns:
+        dict: Updated session data
+    """
+    client = init_supabase()
+    result = client.table("chat_sessions").update({"is_active": False}).eq("id", session_id).execute()
+    return result.data
+
+
+# ============================================================
