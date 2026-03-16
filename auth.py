@@ -81,3 +81,19 @@ def login_user(email: str, password: str) -> Dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 
+def logout_user() -> Dict[str, Any]:
+    """
+    Sign out the currently authenticated user.
+    
+    Returns:
+        dict: Response indicating logout success or failure
+    """
+    client = get_auth_client()
+    try:
+        client.auth.sign_out()
+        return {"success": True, "message": "User logged out successfully"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+# ============================================================
