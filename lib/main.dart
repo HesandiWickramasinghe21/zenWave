@@ -9,8 +9,12 @@ import 'screens/settings_screen.dart';
 import 'screens/privacy_screen.dart';
 import 'screens/help_support_screen.dart';
 import 'screens/purchase_history_screen.dart';
+import 'services/reminder_service.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await ReminderService.init();
+
   runApp(const ZenwaveApp());
 }
 

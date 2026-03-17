@@ -8,9 +8,12 @@
       "version": "1.0.0+1",
       "dependencies": [
         "cupertino_icons",
+        "fl_chart",
         "flutter",
+        "flutter_local_notifications",
         "http",
-        "shared_preferences"
+        "shared_preferences",
+        "timezone"
       ],
       "devDependencies": [
         "flutter_lints",
@@ -40,6 +43,32 @@
         "stream_channel",
         "test_api",
         "vector_math"
+      ]
+    },
+    {
+      "name": "timezone",
+      "version": "0.9.4",
+      "dependencies": [
+        "path"
+      ]
+    },
+    {
+      "name": "flutter_local_notifications",
+      "version": "17.2.4",
+      "dependencies": [
+        "clock",
+        "flutter",
+        "flutter_local_notifications_linux",
+        "flutter_local_notifications_platform_interface",
+        "timezone"
+      ]
+    },
+    {
+      "name": "fl_chart",
+      "version": "0.68.0",
+      "dependencies": [
+        "equatable",
+        "flutter"
       ]
     },
     {
@@ -169,6 +198,34 @@
         "stream_channel",
         "string_scanner",
         "term_glyph"
+      ]
+    },
+    {
+      "name": "flutter_local_notifications_platform_interface",
+      "version": "7.2.0",
+      "dependencies": [
+        "flutter",
+        "plugin_platform_interface"
+      ]
+    },
+    {
+      "name": "flutter_local_notifications_linux",
+      "version": "4.0.1",
+      "dependencies": [
+        "dbus",
+        "ffi",
+        "flutter",
+        "flutter_local_notifications_platform_interface",
+        "path",
+        "xdg_directories"
+      ]
+    },
+    {
+      "name": "equatable",
+      "version": "2.0.8",
+      "dependencies": [
+        "collection",
+        "meta"
       ]
     },
     {
@@ -319,6 +376,36 @@
       ]
     },
     {
+      "name": "plugin_platform_interface",
+      "version": "2.1.8",
+      "dependencies": [
+        "meta"
+      ]
+    },
+    {
+      "name": "xdg_directories",
+      "version": "1.1.0",
+      "dependencies": [
+        "meta",
+        "path"
+      ]
+    },
+    {
+      "name": "ffi",
+      "version": "2.2.0",
+      "dependencies": []
+    },
+    {
+      "name": "dbus",
+      "version": "0.7.12",
+      "dependencies": [
+        "args",
+        "ffi",
+        "meta",
+        "xml"
+      ]
+    },
+    {
       "name": "path_provider_windows",
       "version": "2.3.0",
       "dependencies": [
@@ -353,13 +440,6 @@
       ]
     },
     {
-      "name": "plugin_platform_interface",
-      "version": "2.1.8",
-      "dependencies": [
-        "meta"
-      ]
-    },
-    {
       "name": "path_provider_linux",
       "version": "2.2.1",
       "dependencies": [
@@ -383,8 +463,17 @@
       "dependencies": []
     },
     {
-      "name": "ffi",
-      "version": "2.2.0",
+      "name": "xml",
+      "version": "6.6.1",
+      "dependencies": [
+        "collection",
+        "meta",
+        "petitparser"
+      ]
+    },
+    {
+      "name": "args",
+      "version": "2.7.0",
       "dependencies": []
     },
     {
@@ -393,11 +482,11 @@
       "dependencies": []
     },
     {
-      "name": "xdg_directories",
-      "version": "1.1.0",
+      "name": "petitparser",
+      "version": "7.0.2",
       "dependencies": [
-        "meta",
-        "path"
+        "collection",
+        "meta"
       ]
     }
   ],
