@@ -138,7 +138,7 @@ def chat(request: ChatRequest):
     user_message = request.message
     user_id = request.user_id
 
-    if not user_id:
+    if not user_id or user_id == "string":
         user_id = str(uuid.uuid4())
 
     # 1. Save user message to Supabase
