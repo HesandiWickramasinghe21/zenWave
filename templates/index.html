@@ -203,36 +203,37 @@
       .btn-zen:active {
         transform: scale(0.98);
       }
+
+      /* Clean, conflict-free seek bar */
       #seek-bar {
         -webkit-appearance: none;
-        appearance: none;
         width: 100%;
-        height: 3px; /* Makes it a thin line */
-        background: #b3e5fc; /* Light blue background for the "unfilled" part */
+        height: 6px;
+        background: #b3e5fc;
         border-radius: 5px;
         outline: none;
-        /* This creates the blue fill. background-size is updated by JS */
         background-image: linear-gradient(#0288d1, #0288d1);
         background-size: 0% 100%;
         background-repeat: no-repeat;
         cursor: pointer;
-        margin: 15px 0;
+        position: relative;
+        z-index: 5;
       }
 
       #seek-bar::-webkit-slider-thumb {
         -webkit-appearance: none;
-        height: 10px;
-        width: 10px;
+        height: 18px;
+        width: 18px;
         border-radius: 50%;
         background: #0288d1;
-        border: 2px solid #fff;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-        cursor: pointer;
+        border: 3px solid #fff;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+        margin-top: -6px; /* Centers the thumb */
       }
+
       #seek-bar::-webkit-slider-runnable-track {
-        height: 3px; /* THIS controls the bar thickness */
-        background: #b3e5fc;
-        border-radius: 5px;
+        height: 6px;
+        background: transparent; /* Must be transparent to see the fill */
       }
     </style>
   </head>
@@ -505,36 +506,53 @@
     </div>
 
     <script>
-      let chatDiv = document.getElementById("chat");
-      let currentUserId = null;
-      let isExerciseRunning = false;
-      let breathTimeout;
-      let subTimer;
-      let currentMood = "NEUTRAL";
-
-      // --- AUDIO SYSTEM ---
+      // 1. Initialization
+      const chatDiv = document.getElementById("chat");
       const audioPlayer = document.getElementById("bg-music");
       const playBtn = document.getElementById("play-btn");
       const seekBar = document.getElementById("seek-bar");
 
-      // Your playlist
-      const tracks = [
-        "https://www.orangefreesounds.com/wp-content/uploads/2020/07/Free-meditation-music.mp3",
-        "https://www.orangefreesounds.com/wp-content/uploads/2016/02/Meditation-music-free.mp3",
-        "https://www.orangefreesounds.com/wp-content/uploads/2021/05/Deep-relaxing-meditation-music.mp3",
-      ];
+      let currentUserId = null;
+      let isExerciseRunning = false;
+      let breathTimeout, subTimer;
+      let currentMood = "NEUTRAL";
 
+      // 2. Playlist & Music Logic
+      const playlist = {
+        NEUTRAL:
+          "https://www.orangefreesounds.com/wp-content/uploads/2020/07/Free-meditation-music.mp3",
+        STRESSED:
+          "https://www.orangefreesounds.com/wp-content/uploads/2016/02/Meditation-music-free.mp3",
+        ANXIOUS:
+          "https://www.orangefreesounds.com/wp-content/uploads/2021/05/Deep-relaxing-meditation-music.mp3",
+        JOY: "https://www.orangefreesounds.com/wp-content/uploads/2020/07/Free-meditation-music.mp3",
+        SAD: "https://www.orangefreesounds.com/wp-content/uploads/2016/02/Meditation-music-free.mp3",
+        BELL: "https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3",
+      };
+
+      const tracks = [playlist.NEUTRAL, playlist.STRESSED, playlist.ANXIOUS];
       let currentTrackIdx = 0;
+      audioPlayer.src = tracks[currentTrackIdx];
 
-      // Initialize first track
-      if (!audioPlayer.src) {
-        audioPlayer.src = tracks[currentTrackIdx];
-      }
+      audioPlayer.addEventListener("timeupdate", () => {
+        if (audioPlayer.duration && !isExerciseRunning) {
+          const progress =
+            (audioPlayer.currentTime / audioPlayer.duration) * 100;
+          seekBar.value = progress;
+          seekBar.style.backgroundSize = progress + "% 100%";
+        }
+      });
+
+      seekBar.addEventListener("input", function () {
+        if (audioPlayer.duration) {
+          audioPlayer.currentTime = (this.value / 100) * audioPlayer.duration;
+        }
+      });
 
       function toggleMusic() {
         if (audioPlayer.paused) {
-          audioPlayer.play();
-          playBtn.innerHTML = "<b>||</b>"; // Professional Pause look
+          audioPlayer.play().catch(() => console.log("Interaction needed"));
+          playBtn.innerHTML = "<b>||</b>";
         } else {
           audioPlayer.pause();
           playBtn.innerText = "▶";
@@ -549,93 +567,7 @@
         playBtn.innerHTML = "<b>||</b>";
       }
 
-      // Update the "Music Line" filling effect
-      audioPlayer.addEventListener("timeupdate", () => {
-        if (audioPlayer.duration) {
-          const value = (audioPlayer.currentTime / audioPlayer.duration) * 100;
-          seekBar.value = value;
-          // Dynamically updates the blue fill width
-          seekBar.style.backgroundSize = value + "% 100%";
-        }
-      });
-
-      // Also add this so the color updates when you manually drag the bar
-      seekBar.addEventListener("input", () => {
-        seekBar.style.backgroundSize = seekBar.value + "% 100%";
-      });
-
-      // Auto-play next track
-      audioPlayer.onended = () => changeTrack(1);
-
-      // --- CHAT LOGIC ---
-      async function send() {
-        let msgInput = document.getElementById("msg");
-        let msg = msgInput.value;
-        if (!msg) return;
-        chatDiv.innerHTML += `<div class="user"><b>You:</b> ${msg}</div>`;
-        chatDiv.scrollTo({ top: chatDiv.scrollHeight, behavior: "smooth" });
-        msgInput.value = "";
-        let tempId = "loading-" + Date.now();
-        chatDiv.innerHTML += `<div class="ai" id="${tempId}">Thinking...</div>`;
-        try {
-          let res = await fetch("http://localhost:5000/chat", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message: msg, user_id: currentUserId }),
-          });
-          let data = await res.json();
-          currentUserId = data.user_id;
-          document.getElementById(tempId).remove();
-          let aiBubble = document.createElement("div");
-          aiBubble.className = "ai";
-          aiBubble.innerHTML = "<b>ZenWave :</b> ";
-          let textSpan = document.createElement("span");
-          aiBubble.appendChild(textSpan);
-          chatDiv.appendChild(aiBubble);
-          typeEffect(textSpan, data.reply);
-          updateMoodUI(data.emotion);
-          document.getElementById("bpm-val").innerText = data.bpm;
-          document.getElementById("bpm-card").style.background =
-            data.bpm > 90 ? "#ffebee" : "#e8f5e9";
-        } catch (e) {
-          document.getElementById(tempId).innerText = "Connection lost.";
-        }
-      }
-
-      function updateMoodUI(emotion) {
-        currentMood = emotion;
-        const moodVal = document.getElementById("mood-val");
-        const moodCard = document.getElementById("moodcard");
-        if (!moodVal || !moodCard) return;
-
-        moodVal.innerText = emotion;
-        const moodStyles = {
-          STRESSED: { bg: "#ffcdd2", color: "#b71c1c", border: "#ef5350" },
-          ANXIOUS: { bg: "#fff9c4", color: "#f57f17", border: "#ffb74d" },
-          SAD: { bg: "#e3f2fd", color: "#1976d2", border: "#64b5f6" },
-          JOY: { bg: "#e8f5e9", color: "#2e7d32", border: "#81c784" },
-          ANGRY: { bg: "#fce4ec", color: "#c2185b", border: "#f06292" },
-          NEUTRAL: { bg: "#f3e5f5", color: "#4a148c", border: "#ce93d8" },
-        };
-
-        const style = moodStyles[emotion] || moodStyles.NEUTRAL;
-        moodCard.style.backgroundColor = style.bg;
-        moodCard.style.borderBottomColor = style.border;
-        moodVal.style.color = style.color;
-
-        const startBtn = document.getElementById("breathing-start-btn");
-        if (startBtn) {
-          if (["STRESSED", "ANXIOUS", "ANGRY"].includes(emotion)) {
-            startBtn.style.animation = "pulse 2s infinite";
-            startBtn.style.background = "#ef5350";
-          } else {
-            startBtn.style.animation = "none";
-            startBtn.style.background = "#4caf50";
-          }
-        }
-      }
-
-      // --- BREATHING EXERCISES DATA ---
+      // 3. Breathing Exercise Data
       const exercises = {
         BOX: {
           title: "Box Breathing",
@@ -679,7 +611,7 @@
         SIGH: {
           title: "Power Sigh",
           emoji: "⚡",
-          desc: "Instant biological reset for high-stress moments.",
+          desc: "Instant biological reset for stress.",
           theme: "linear-gradient(135deg, #fff3e0 0%, #ffcc80 100%)",
           icon: "🌬️",
           accent: "#ef6c00",
@@ -691,11 +623,12 @@
         },
       };
 
-      // --- SCREEN NAVIGATION ---
+      // 4. Navigation & UI
       function showScreen(screenId) {
         document.getElementById("overlay").style.display = "flex";
-        const screens = document.querySelectorAll(".breath-screen");
-        screens.forEach((s) => (s.style.display = "none"));
+        document
+          .querySelectorAll(".breath-screen")
+          .forEach((s) => (s.style.display = "none"));
         const target = document.getElementById("screen-" + screenId);
         if (target) target.style.display = "block";
         if (screenId === "categories") renderCategories();
@@ -706,10 +639,15 @@
         list.innerHTML = "";
         Object.keys(exercises).forEach((key) => {
           const ex = exercises[key];
-          list.innerHTML += `<div class="category-card" onclick="prepInstructions('${key}')">
-            <div style="display:flex; justify-content:space-between; align-items:center;"><span style="font-size:24px;">${ex.emoji}</span><span style="font-size:12px; font-weight:bold; color:${ex.accent}; background:white; padding:4px 10px; border-radius:10px;">5 MIN</span></div>
-            <div style="font-size:18px; font-weight:bold; margin-top:10px; color:#333;">${ex.title}</div>
-            <div style="font-size:13px; color:#777; margin-top:5px;">${ex.desc}</div></div>`;
+          list.innerHTML += `
+                <div class="category-card" onclick="prepInstructions('${key}')">
+                    <div style="display:flex; justify-content:space-between;">
+                        <span>${ex.emoji}</span>
+                        <span style="font-size:10px; background:white; padding:2px 5px; border-radius:5px;">5 MIN</span>
+                    </div>
+                    <strong>${ex.title}</strong><br>
+                    <small>${ex.desc}</small>
+                </div>`;
         });
       }
 
@@ -717,12 +655,8 @@
         const ex = exercises[key];
         showScreen("instructions");
         document.getElementById("ins-title").innerText = ex.title;
-        document.getElementById("ins-desc").innerText = ex.desc;
         document.getElementById("ins-steps").innerHTML = ex.steps
-          .map(
-            (step, index) =>
-              `<div style="margin-bottom:10px; color:#444;"><b>${index + 1}.</b> ${step.s} (${step.t}s)</div>`,
-          )
+          .map((step, i) => `<div>${i + 1}. ${step.s} (${step.t}s)</div>`)
           .join("");
         document.getElementById("final-start-btn").onclick = () =>
           startAnimation(key);
@@ -730,53 +664,42 @@
 
       function startAnimation(key) {
         showScreen("animation");
-        // Start Audio for Exercise
         audioPlayer.src = playlist[currentMood] || playlist.NEUTRAL;
         audioPlayer.play();
-        playBtn.innerText = "⏸";
         runBreathLoop(exercises[key]);
       }
 
       function runBreathLoop(ex) {
         isExerciseRunning = true;
-        let stepIdx = 0;
-        let cycle = 1;
+        let stepIdx = 0,
+          cycle = 1;
         const orb = document.getElementById("orb");
         const timerText = document.getElementById("ex-timer");
-        const cycleText = document.getElementById("cycle-count");
 
         const loop = () => {
           if (!isExerciseRunning) return;
           if (cycle > 5) {
             new Audio(playlist.BELL).play();
-            timerText.innerText = "REFLECT & REST";
-            orb.innerHTML = `<span style="font-size:50px">🤍</span>`;
-            orb.style.transform = "scale(1)";
-            setTimeout(closeExercise, 3000);
+            timerText.innerText = "DONE";
+            setTimeout(closeExercise, 2000);
             return;
           }
-
           const step = ex.steps[stepIdx];
           timerText.innerText = step.s;
-          timerText.style.color = ex.accent;
           orb.style.transform = `scale(${step.z})`;
           orb.style.background = ex.theme;
-          orb.style.borderColor = ex.accent;
-          cycleText.innerText = `Cycle ${cycle} / 5`;
 
           let timeLeft = step.t;
-          const updateOrbText = () => {
+          const updateText = () => {
             if (timeLeft > 0 && isExerciseRunning) {
-              orb.innerHTML = `<span style="font-size:50px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">${ex.icon}</span>
-                <div style="font-size:28px; font-weight:800; color:${ex.accent}; margin-top:10px;">${timeLeft}s</div>`;
+              orb.innerHTML = `<div style="font-size:30px;">${timeLeft}s</div>`;
               timeLeft--;
-              subTimer = setTimeout(updateOrbText, 1000);
+              subTimer = setTimeout(updateText, 1000);
             }
           };
-          updateOrbText();
+          updateText();
 
           breathTimeout = setTimeout(() => {
-            if (!isExerciseRunning) return;
             stepIdx++;
             if (stepIdx >= ex.steps.length) {
               stepIdx = 0;
@@ -792,25 +715,74 @@
         isExerciseRunning = false;
         clearTimeout(breathTimeout);
         clearTimeout(subTimer);
-        audioPlayer.pause();
-        playBtn.innerText = "▶";
         document.getElementById("overlay").style.display = "none";
-        const orb = document.getElementById("orb");
-        orb.style.transform = "scale(1)";
-        orb.innerHTML = "";
+        audioPlayer.pause();
+      }
+
+      // 5. Chat & Typing logic
+      async function send() {
+        let msgInput = document.getElementById("msg");
+        let msg = msgInput.value;
+        if (!msg) return;
+
+        chatDiv.innerHTML += `<div class="user"><b>You:</b> ${msg}</div>`;
+        msgInput.value = "";
+
+        let tempId = "loading-" + Date.now();
+        chatDiv.innerHTML += `<div class="ai" id="${tempId}">Thinking...</div>`;
+
+        try {
+          let res = await fetch("http://localhost:5000/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: msg, user_id: currentUserId }),
+          });
+          let data = await res.json();
+          currentUserId = data.user_id;
+          document.getElementById(tempId).remove();
+
+          let aiBubble = document.createElement("div");
+          aiBubble.className = "ai";
+          aiBubble.innerHTML = "<b>ZenWave:</b> ";
+          let textSpan = document.createElement("span");
+          aiBubble.appendChild(textSpan);
+          chatDiv.appendChild(aiBubble);
+
+          typeEffect(textSpan, data.reply);
+          updateMoodUI(data.emotion);
+          document.getElementById("bpm-val").innerText = data.bpm;
+        } catch (e) {
+          document.getElementById(tempId).innerText = "Server error.";
+        }
       }
 
       function typeEffect(element, text) {
         let i = 0;
         let interval = setInterval(() => {
           if (i < text.length) {
-            element.innerHTML += text.charAt(i);
-            i++;
+            element.innerHTML += text.charAt(i++);
             chatDiv.scrollTop = chatDiv.scrollHeight;
           } else {
             clearInterval(interval);
           }
         }, 20);
+      }
+
+      function updateMoodUI(emotion) {
+        currentMood = emotion;
+        const moodVal = document.getElementById("mood-val");
+        const moodCard = document.getElementById("moodcard");
+        if (!moodVal || !moodCard) return;
+
+        moodVal.innerText = emotion;
+        const styles = {
+          STRESSED: { bg: "#ffcdd2", color: "#b71c1c" },
+          ANXIOUS: { bg: "#fff9c4", color: "#f57f17" },
+          NEUTRAL: { bg: "#f3e5f5", color: "#4a148c" },
+        };
+        const s = styles[emotion] || styles.NEUTRAL;
+        moodCard.style.backgroundColor = s.bg;
+        moodVal.style.color = s.color;
       }
     </script>
   </body>
