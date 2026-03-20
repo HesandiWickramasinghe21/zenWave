@@ -1,0 +1,14 @@
+# Ignore the massive build folder
+/build/
+
+# Ignore Flutter/Dart temporary files
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub/
+
+# Ignore IDE files
+.idea/
+.vscode/
+*.iml
