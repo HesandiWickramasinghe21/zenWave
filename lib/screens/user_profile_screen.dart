@@ -47,7 +47,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   void _showAvatarPicker() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF3EFFF),
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
       builder: (context) => Padding(
@@ -72,7 +72,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     Navigator.pop(context);
                   },
                   child: CircleAvatar(
-                    backgroundColor: const Color(0xFFF7F8FA),
+                    backgroundColor: const Color(0xFFF3EFFF),
                     foregroundImage: AssetImage(path),
                     child: const Icon(Icons.person, color: Colors.black12),
                   ),
@@ -90,9 +90,9 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     if (_isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator(color: Color(0xFF58CC02))));
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF3EFFF),
       appBar: AppBar(
-        elevation: 0, backgroundColor: Colors.white,
+        elevation: 0, backgroundColor: const Color(0xFFF3EFFF),
         leading: IconButton(icon: const Icon(Icons.arrow_back, color: Colors.black26), onPressed: () => Navigator.pop(context)),
         title: const Text("PROFILE", style: TextStyle(color: Colors.black26, fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 2)),
         centerTitle: true,

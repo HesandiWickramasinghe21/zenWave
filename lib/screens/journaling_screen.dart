@@ -31,7 +31,7 @@ class _JournalingScreenState extends State<JournalingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF3EFFF),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,

@@ -11,7 +11,7 @@ class JournalHomeScreen extends StatelessWidget {
     const Color bgSoft = Color(0xFFF7F8FA);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF3EFFF),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
