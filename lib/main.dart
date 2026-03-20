@@ -10,6 +10,7 @@ import 'screens/privacy_screen.dart';
 import 'screens/help_support_screen.dart';
 import 'screens/purchase_history_screen.dart';
 import 'services/reminder_service.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,11 +29,25 @@ class ZenwaveApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'ZenWave',
-      theme: ThemeData(
-        useMaterial3: true,
-        fontFamily: 'Inter',
-        colorScheme: ColorScheme.fromSeed(seedColor: zenPurple),
-      ),
+theme: ThemeData(
+  useMaterial3: true,
+  colorScheme: ColorScheme.fromSeed(seedColor: zenPurple),
+  
+  // This applies the clean "Poppins" look to every word
+  textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme).copyWith(
+    displayLarge: GoogleFonts.poppins(
+      fontWeight: FontWeight.w700, // Bold for the big headers
+      color: const Color(0xFF1E1E2C),
+    ),
+    headlineMedium: GoogleFonts.poppins(
+      fontWeight: FontWeight.w600,
+      color: const Color(0xFF1E1E2C),
+    ),
+    bodyMedium: GoogleFonts.poppins(
+      color: const Color(0xFF1E1E2C).withOpacity(0.8),
+    ),
+  ),
+),
       initialRoute: "/login",
       routes: {
         "/login": (context) => const SplashLoginScreen(),
