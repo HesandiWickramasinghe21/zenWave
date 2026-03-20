@@ -88,7 +88,7 @@ class _MentalHealthReportPageState extends State<MentalHealthReportPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF3EFFF),
       endDrawer: Drawer(
         child: Column(
           children: [

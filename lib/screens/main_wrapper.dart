@@ -41,7 +41,7 @@ class _MainWrapperState extends State<MainWrapper> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF3EFFF),
       body: IndexedStack(
         index: _selectedIndex,
         children: _screens,
