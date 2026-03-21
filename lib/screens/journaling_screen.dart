@@ -13,125 +13,94 @@ class _JournalingScreenState extends State<JournalingScreen> {
   int _wordCount = 0;
   String _selectedEmoji = "😊";
 
-  // Palette
-  static const Color zenPurple = Color(0xFF9147FF);
-  static const Color borderLight = Color(0xFFE5E5E5);
+  // Refined Zen Palette
+  static const Color primaryPurple = Color(0xFF6366F1); // Indigo
+  static const Color backgroundLavender = Color(0xFFF8FAFC);
+  static const Color surfaceWhite = Colors.white;
+  static const Color textSlate = Color(0xFF1E293B);
+  static const Color textLight = Color(0xFF64748B);
 
   @override
   void initState() {
     super.initState();
-    _contentController.addListener(() {
-      final text = _contentController.text.trim();
-      setState(() {
-        _wordCount = text.isEmpty ? 0 : text.split(RegExp(r'\s+')).length;
-      });
+    _contentController.addListener(_handleWordCount);
+  }
+
+  void _handleWordCount() {
+    final text = _contentController.text.trim();
+    setState(() {
+      _wordCount = text.isEmpty ? 0 : text.split(RegExp(r'\s+')).length;
     });
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _contentController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF3EFFF),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        title: Row(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.close_rounded, color: Colors.black45, size: 30),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: const LinearProgressIndicator(
-                  value: 0.4, // Visual "progress" through the journal entry
-                  backgroundColor: borderLight,
-                  valueColor: AlwaysStoppedAnimation<Color>(zenPurple),
-                  minHeight: 12,
-                ),
-              ),
-            ),
-            const SizedBox(width: 15),
-            const Icon(Icons.favorite, color: Colors.redAccent),
-          ],
-        ),
-      ),
+      backgroundColor: backgroundLavender,
+      appBar: _buildAppBar(context),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              "How are you feeling?",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+              "Reflect on your day",
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                color: textSlate,
+                letterSpacing: -0.5,
+              ),
             ),
-            const SizedBox(height: 15),
-            
-            // MOOD SELECTOR (Duo attraction feature)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: ["😊", "😔", "😤", "😴", "🧠"].map((emoji) {
-                bool isSelected = _selectedEmoji == emoji;
-                return GestureDetector(
-                  onTap: () => setState(() => _selectedEmoji = emoji),
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: isSelected ? zenPurple.withOpacity(0.1) : Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isSelected ? zenPurple : borderLight,
-                        width: 2,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: isSelected ? zenPurple.withOpacity(0.2) : borderLight,
-                          offset: const Offset(0, 4),
-                        )
-                      ],
-                    ),
-                    child: Text(emoji, style: const TextStyle(fontSize: 24)),
-                  ),
-                );
-              }).toList(),
+            const SizedBox(height: 8),
+            const Text(
+              "How are you feeling right now?",
+              style: TextStyle(fontSize: 16, color: textLight),
             ),
+            const SizedBox(height: 24),
             
-            const SizedBox(height: 30),
+            // MOOD SELECTOR
+            _buildMoodSelector(),
+            
+            const SizedBox(height: 32),
 
             // TITLE INPUT
-            _buildDuoInput(
+            _buildInputLabel("Title"),
+            _buildModernInput(
               controller: _titleController,
-              hint: "Title of your story...",
+              hint: "Give your reflection a name...",
               isTitle: true,
             ),
             
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
 
             // CONTENT INPUT
+            _buildInputLabel("Your Thoughts"),
             Stack(
               alignment: Alignment.bottomRight,
               children: [
-                _buildDuoInput(
+                _buildModernInput(
                   controller: _contentController,
-                  hint: "Write your heart out...",
+                  hint: "What's on your mind?",
                   isTitle: false,
-                  maxLines: 10,
+                  maxLines: 12,
                 ),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: bgSoft,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: borderLight),
-                    ),
-                    child: Text(
-                      "$_wordCount words",
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black38),
+                  child: Text(
+                    "$_wordCount words",
+                    style: const TextStyle(
+                      fontSize: 12, 
+                      fontWeight: FontWeight.w600, 
+                      color: textLight
                     ),
                   ),
                 ),
@@ -140,44 +109,87 @@ class _JournalingScreenState extends State<JournalingScreen> {
             
             const SizedBox(height: 40),
 
-            // SAVE BUTTON (The "Duo" Green Button)
-            GestureDetector(
-              onTap: () {
-                // Success logic here
-              },
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 18),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF58CC02), // Duolingo Green
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: const [
-                    BoxShadow(color: Color(0xFF46A302), offset: Offset(0, 5)), // Darker green bottom
-                  ],
-                ),
-                child: const Center(
-                  child: Text(
-                    "SAVE ENTRY",
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 1.2),
-                  ),
-                ),
-              ),
-            ),
+            // SAVE BUTTON
+            _buildSaveButton(),
             
-            const SizedBox(height: 20),
-            Center(
-              child: TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text("CAN'T WRITE NOW", style: TextStyle(color: Colors.black26, fontWeight: FontWeight.w900)),
-              ),
-            )
+            const SizedBox(height: 40),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildDuoInput({
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
+    return AppBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: textSlate, size: 20),
+        onPressed: () => Navigator.of(context).pop(),
+      ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.info_outline_rounded, color: textLight),
+          onPressed: () {},
+        ),
+        const SizedBox(width: 12),
+      ],
+    );
+  }
+
+  Widget _buildMoodSelector() {
+    final moods = ["😊", "😔", "😤", "😴", "🧠"];
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: moods.map((emoji) {
+        bool isSelected = _selectedEmoji == emoji;
+        return GestureDetector(
+          onTap: () => setState(() => _selectedEmoji = emoji),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: isSelected ? primaryPurple : surfaceWhite,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: isSelected 
+                    ? primaryPurple.withOpacity(0.3) 
+                    : Colors.black.withOpacity(0.05),
+                  blurRadius: 15,
+                  offset: const Offset(0, 8),
+                )
+              ],
+            ),
+            child: Text(
+              emoji, 
+              style: TextStyle(
+                fontSize: 26, 
+                color: isSelected ? Colors.white : null
+              )
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildInputLabel(String label) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 8),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: textLight,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModernInput({
     required TextEditingController controller,
     required String hint,
     required bool isTitle,
@@ -185,21 +197,27 @@ class _JournalingScreenState extends State<JournalingScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFF7F8FA),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: borderLight, width: 2),
+        color: surfaceWhite,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
       ),
       child: TextField(
         controller: controller,
         maxLines: maxLines,
         style: TextStyle(
-          fontSize: isTitle ? 20 : 16,
-          fontWeight: isTitle ? FontWeight.w800 : FontWeight.w500,
-          color: Colors.black87,
+          fontSize: isTitle ? 18 : 16,
+          fontWeight: isTitle ? FontWeight.w700 : FontWeight.w400,
+          color: textSlate,
         ),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: const TextStyle(color: Colors.black26, fontWeight: FontWeight.w600),
+          hintStyle: const TextStyle(color: Colors.black26),
           contentPadding: const EdgeInsets.all(20),
           border: InputBorder.none,
         ),
@@ -207,5 +225,47 @@ class _JournalingScreenState extends State<JournalingScreen> {
     );
   }
 
-  static const Color bgSoft = Color(0xFFF7F8FA);
+  Widget _buildSaveButton() {
+    return Container(
+      width: double.infinity,
+      height: 60,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: const LinearGradient(
+          colors: [primaryPurple, Color(0xFF818CF8)],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: primaryPurple.withOpacity(0.35),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: ElevatedButton(
+        onPressed: () {
+          // Add your Save Logic here
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Reflection Saved Successfully")),
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        ),
+        child: const Text(
+          "Save Reflection",
+          style: TextStyle(
+            color: Colors.white, 
+            fontWeight: FontWeight.bold, 
+            fontSize: 16, 
+            letterSpacing: 0.5
+          ),
+        ),
+      ),
+    );
+  }
 }
