@@ -11,7 +11,6 @@ class _JournalingScreenState extends State<JournalingScreen> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
   int _wordCount = 0;
-  String _selectedEmoji = "😊";
 
   // Refined Zen Palette
   static const Color primaryPurple = Color(0xFF6366F1); // Indigo
@@ -62,18 +61,14 @@ class _JournalingScreenState extends State<JournalingScreen> {
             ),
             const SizedBox(height: 8),
             const Text(
-              "How are you feeling right now?",
+              "Write down your thoughts and feelings...",
               style: TextStyle(fontSize: 16, color: textLight),
             ),
-            const SizedBox(height: 24),
-            
-            // MOOD SELECTOR
-            _buildMoodSelector(),
             
             const SizedBox(height: 32),
 
             // TITLE INPUT
-            _buildInputLabel("Title"),
+            _buildInputLabel("TITLE"),
             _buildModernInput(
               controller: _titleController,
               hint: "Give your reflection a name...",
@@ -83,7 +78,7 @@ class _JournalingScreenState extends State<JournalingScreen> {
             const SizedBox(height: 24),
 
             // CONTENT INPUT
-            _buildInputLabel("Your Thoughts"),
+            _buildInputLabel("YOUR THOUGHTS"),
             Stack(
               alignment: Alignment.bottomRight,
               children: [
@@ -137,53 +132,16 @@ class _JournalingScreenState extends State<JournalingScreen> {
     );
   }
 
-  Widget _buildMoodSelector() {
-    final moods = ["😊", "😔", "😤", "😴", "🧠"];
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: moods.map((emoji) {
-        bool isSelected = _selectedEmoji == emoji;
-        return GestureDetector(
-          onTap: () => setState(() => _selectedEmoji = emoji),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: isSelected ? primaryPurple : surfaceWhite,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: isSelected 
-                    ? primaryPurple.withOpacity(0.3) 
-                    : Colors.black.withOpacity(0.05),
-                  blurRadius: 15,
-                  offset: const Offset(0, 8),
-                )
-              ],
-            ),
-            child: Text(
-              emoji, 
-              style: TextStyle(
-                fontSize: 26, 
-                color: isSelected ? Colors.white : null
-              )
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
   Widget _buildInputLabel(String label) {
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(
         label,
         style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
+          fontSize: 12,
+          fontWeight: FontWeight.w800,
           color: textLight,
-          letterSpacing: 0.5,
+          letterSpacing: 1.1,
         ),
       ),
     );
@@ -217,7 +175,7 @@ class _JournalingScreenState extends State<JournalingScreen> {
         ),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: const TextStyle(color: Colors.black26),
+          hintStyle: const TextStyle(color: Color(0xFFCBD5E1)),
           contentPadding: const EdgeInsets.all(20),
           border: InputBorder.none,
         ),
@@ -238,7 +196,7 @@ class _JournalingScreenState extends State<JournalingScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: primaryPurple.withOpacity(0.35),
+            color: primaryPurple.withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -246,9 +204,12 @@ class _JournalingScreenState extends State<JournalingScreen> {
       ),
       child: ElevatedButton(
         onPressed: () {
-          // Add your Save Logic here
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Reflection Saved Successfully")),
+            const SnackBar(
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: primaryPurple,
+              content: Text("Reflection Saved Successfully"),
+            ),
           );
         },
         style: ElevatedButton.styleFrom(
