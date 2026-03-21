@@ -113,100 +113,80 @@ class _SplashLoginScreenState extends State<SplashLoginScreen>
     );
   }
 
-  // SPLASH BACKGROUND
+// UPDATED SPLASH BACKGROUND
   Widget splashBackground(Widget child) {
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: isDark
-                  ? [const Color(0xFF1E1E2C), const Color(0xFF121212)]
-                  : [const Color(0xFFF8F4FF), const Color(0xFFE1D1FF)],
-            ),
-          ),
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          // Colors matched to your illustration's aesthetic
+          colors: isDark
+              ? [const Color(0xFF1E1E2C), const Color(0xFF121212)]
+              : [const Color(0xFFFFFFFF), const Color(0xFFD1B3FF)],
         ),
-        AnimatedBuilder(
-          animation: _waveController,
-          builder: (_, __) {
-            return Positioned(
-              bottom: -140,
-              left: (screenWidth / 2) -
-                  210 +
-                  sin(_waveController.value * 2 * pi) * 25,
-              child: Transform.rotate(
-                angle: -0.6,
-                child: Container(
-                  width: 420,
-                  height: 320,
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? Colors.deepPurple.withOpacity(0.22)
-                        : Colors.deepPurple.withOpacity(0.28),
-                    borderRadius: BorderRadius.circular(140),
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-        SafeArea(child: child),
-      ],
+      ),
+      child: SafeArea(child: child),
     );
   }
 
-  // SPLASH UI
+  // UPDATED SPLASH UI
   Widget splashUI() {
     return splashBackground(
       Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 420),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 30),
           child: Column(
             key: const ValueKey(1),
             mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              // 1. The Illustration from your image
               Container(
-                width: 160,
-                height: 160,
+                height: MediaQuery.of(context).size.height * 0.4,
                 decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
                   image: DecorationImage(
-                    image: AssetImage('assets/zenwave_logo.png'),
+                    // Ensure you have added your image to assets/ and pubspec.yaml
+                    image: AssetImage('assets/hero.png'), 
                     fit: BoxFit.contain,
                   ),
                 ),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 40),
+              
+              // 2. ZenWave Title
               Text(
                 "ZenWave",
-                textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 34,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black87,
+                  fontSize: 48, // Larger, modern size as per design
+                  fontWeight: FontWeight.w300, // Thinner, elegant weight
+                  color: isDark ? Colors.white : const Color(0xFF37474F),
+                  letterSpacing: 1.5,
                 ),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 20),
+              
+              // 3. Subtitle
               Text(
                 "Therapeutic Chatbot API\nfor emotional and cognitive wellness",
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 15,
-                  color: isDark ? Colors.white70 : Colors.black54,
+                  fontSize: 16,
+                  height: 1.5,
+                  fontWeight: FontWeight.w400,
+                  color: isDark ? Colors.white70 : const Color(0xFF546E7A),
                 ),
               ),
-              const SizedBox(height: 80),
+              const SizedBox(height: 60),
+              
+              // 4. Developer Credit
               Text(
                 "Developed by DEVSQUAD",
                 style: TextStyle(
                   fontSize: 12,
-                  color: isDark ? Colors.white54 : Colors.black45,
+                  letterSpacing: 1.1,
+                  color: isDark ? Colors.white38 : Colors.black38,
                 ),
               ),
             ],
