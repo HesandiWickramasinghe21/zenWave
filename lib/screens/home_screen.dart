@@ -215,7 +215,7 @@ Widget _buildSliverAppBar() {
         _buildActionCard("Emotion Chat", Icons.chat_bubble_outline_rounded, Colors.orange, '/chatbot'),
         _buildActionCard("Sound Therapy", Icons.headset_rounded, Colors.blue, '/chatbot'),
         _buildActionCard("Journaling", Icons.auto_stories_rounded, Colors.purple, '/journaling'),
-        _buildActionCard("Saved Entries", Icons.bookmarks_outlined, Colors.teal, '/saved_journals'),
+        _buildActionCard("Breathing Exercises", Icons.air_rounded, Colors.teal, '/breathing_exercises'),
       ],
     );
   }
