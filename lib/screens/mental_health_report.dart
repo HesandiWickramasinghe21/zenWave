@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import '../services/local_storage.dart';
@@ -13,15 +14,18 @@ class MentalHealthReportPage extends StatefulWidget {
 class _MentalHealthReportPageState extends State<MentalHealthReportPage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  // --- ZENWAVE BRANDING CONSTANTS ---
+  static const Color zenPurple = Color(0xFF9147FF);
+  static const Color primaryIndigo = Color(0xFF6366F1);
+  static const Color background = Color(0xFFF8F9FE);
+  static const Color textDark = Color(0xFF2D3142);
+  static const Color textLight = Color(0xFF94A3B8);
+
   String activeTab = 'Overview';
   bool _loading = true;
 
   Map<String, int> _moodCounts = {
-    'sad': 0,
-    'neutral': 0,
-    'happy': 0,
-    'excited': 0,
-    'sleepy': 0,
+    'sad': 0, 'neutral': 0, 'happy': 0, 'excited': 0, 'sleepy': 0,
   };
 
   List<Map<String, dynamic>> _weeklyMoodData = [];
@@ -45,42 +49,25 @@ class _MentalHealthReportPageState extends State<MentalHealthReportPage> {
     });
   }
 
-  int get totalMoods =>
-      _moodCounts.values.fold(0, (previous, current) => previous + current);
+  int get totalMoods => _moodCounts.values.fold(0, (p, c) => p + c);
 
   String get dominantMood {
     String bestKey = 'neutral';
     int bestValue = -1;
-
     _moodCounts.forEach((key, value) {
       if (value > bestValue) {
         bestValue = value;
         bestKey = key;
       }
     });
-
-    switch (bestKey) {
-      case 'sad':
-        return 'Sad';
-      case 'happy':
-        return 'Happy';
-      case 'excited':
-        return 'Excited';
-      case 'sleepy':
-        return 'Sleepy';
-      default:
-        return 'Neutral';
-    }
+    return bestKey[0].toUpperCase() + bestKey.substring(1);
   }
 
   String get overallStatus {
     if (totalMoods == 0) return 'NO DATA';
-    if ((_moodCounts['happy'] ?? 0) + (_moodCounts['excited'] ?? 0) >= totalMoods / 2) {
-      return 'GOOD';
-    }
-    if ((_moodCounts['sad'] ?? 0) >= totalMoods / 2) {
-      return 'NEEDS CARE';
-    }
+    int positive = (_moodCounts['happy'] ?? 0) + (_moodCounts['excited'] ?? 0);
+    if (positive >= totalMoods / 2) return 'POSITIVE';
+    if ((_moodCounts['sad'] ?? 0) >= totalMoods / 2) return 'NEEDS CARE';
     return 'STABLE';
   }
 
@@ -88,287 +75,181 @@ class _MentalHealthReportPageState extends State<MentalHealthReportPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: const Color(0xFFF3EFFF),
-      endDrawer: Drawer(
-        child: Column(
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF9147FF), Color(0xFFB388FF)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.spa_rounded, color: Colors.white, size: 40),
-                    SizedBox(height: 10),
-                    Text(
-                      "ZenWave",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            _buildDrawerItem(Icons.home_rounded, "Home", onTap: () {
-              Navigator.pop(context);
-              Navigator.pushReplacementNamed(context, "/home");
-            }),
-            _buildDrawerItem(Icons.chat_bubble_rounded, "Chatbot", onTap: () {
-              Navigator.pop(context);
-              Navigator.pushNamed(context, "/chatbot");
-            }),
-            _buildDrawerItem(Icons.book_rounded, "Journaling", onTap: () {
-              Navigator.pop(context);
-              Navigator.pushNamed(context, "/journaling");
-            }),
-            _buildDrawerItem(Icons.insights_rounded, "Mental Health Report", onTap: () {
-              Navigator.pop(context);
-            }),
-            _buildDrawerItem(Icons.person_rounded, "User Profile", onTap: () {
-              Navigator.pop(context);
-              Navigator.pushNamed(context, "/profile");
-            }),
-            const Spacer(),
-            const Divider(),
-            _buildDrawerItem(Icons.logout_rounded, "Logout", onTap: () async {
-              try {
-                await ApiService.logout();
-              } catch (_) {}
-              if (context.mounted) {
-                Navigator.pushReplacementNamed(context, "/login");
-              }
-            }),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
+      backgroundColor: background,
+      endDrawer: _buildZenDrawer(),
       body: SafeArea(
         child: _loading
-            ? const Center(child: CircularProgressIndicator())
-            : SingleChildScrollView(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        IconButton(
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-                        ),
-                        const SizedBox(width: 12),
-                        const Text(
-                          "Mental Health Report",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF2D3142),
-                          ),
-                        ),
-                        const Spacer(),
-                        IconButton(
-                          onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
-                          icon: const Icon(Icons.menu, size: 22),
-                        ),
-                      ],
+            ? const Center(child: CircularProgressIndicator(color: zenPurple))
+            : CustomScrollView(
+                physics: const BouncingScrollPhysics(),
+                slivers: [
+                  // --- CUSTOM APP BAR ---
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                      child: _buildHeader(),
                     ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'ZenWave Wellness',
-                      style: TextStyle(fontSize: 14, color: Colors.grey),
-                    ),
-                    const Text(
-                      'Mood Analysis & Insights',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF2D3142),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Container(
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEEEEEE),
-                        borderRadius: BorderRadius.circular(25),
-                      ),
-                      child: Row(
+                  ),
+
+                  // --- TITLE & TOGGLE ---
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildTabItem('Overview'),
-                          _buildTabItem('Detailed'),
-                          _buildTabItem('Timeline'),
+                          const Text('ZENWAVE ANALYTICS', 
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 1.5, color: textLight)),
+                          const SizedBox(height: 4),
+                          const Text('Mood Insights', 
+                            style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: textDark)),
+                          const SizedBox(height: 24),
+                          _buildCustomToggle(),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    if (activeTab == 'Overview') _buildOverviewSection(),
-                    if (activeTab == 'Detailed') _buildDetailedSection(),
-                    if (activeTab == 'Timeline') _buildTimelineSection(),
-                  ],
-                ),
+                  ),
+
+                  // --- DYNAMIC CONTENT ---
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    sliver: SliverList(
+                      delegate: SliverChildListDelegate([
+                        if (activeTab == 'Overview') _buildOverviewSection(),
+                        if (activeTab == 'Detailed') _buildDetailedSection(),
+                        if (activeTab == 'Timeline') _buildTimelineSection(),
+                        
+                        // FIX: BOTTOM SPACER FOR FLOATING NAV BAR
+                        const SizedBox(height: 140), 
+                      ]),
+                    ),
+                  ),
+                ],
               ),
       ),
     );
   }
 
-  Widget _buildTabItem(String tabName) {
-    final bool isActive = activeTab == tabName;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => setState(() => activeTab = tabName),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          margin: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: isActive ? const Color(0xFF9DC4F8) : Colors.transparent,
-            borderRadius: BorderRadius.circular(25),
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            tabName,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: isActive ? Colors.white : Colors.grey[600],
+  Widget _buildHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: _iconButton(Icons.arrow_back_ios_new_rounded),
+        ),
+        const Text("Health Report", style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: textDark)),
+        GestureDetector(
+          onTap: () => _scaffoldKey.currentState?.openEndDrawer(),
+          child: _iconButton(Icons.menu_rounded),
+        ),
+      ],
+    );
+  }
+
+  Widget _iconButton(IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10)],
+      ),
+      child: Icon(icon, size: 18, color: textDark),
+    );
+  }
+
+  Widget _buildCustomToggle() {
+    return Container(
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10)],
+      ),
+      child: Row(
+        children: ['Overview', 'Detailed', 'Timeline'].map((tab) => Expanded(
+          child: GestureDetector(
+            onTap: () => setState(() => activeTab = tab),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                gradient: activeTab == tab ? const LinearGradient(colors: [zenPurple, primaryIndigo]) : null,
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Center(
+                child: Text(tab, style: TextStyle(
+                  color: activeTab == tab ? Colors.white : textLight,
+                  fontWeight: FontWeight.w800, fontSize: 13
+                )),
+              ),
             ),
           ),
-        ),
+        )).toList(),
       ),
     );
   }
 
   Widget _buildOverviewSection() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(28),
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFFDFA6E3), Color(0xFFC393D9)],
-            ),
-            borderRadius: BorderRadius.circular(24),
+            gradient: const LinearGradient(colors: [zenPurple, primaryIndigo], begin: Alignment.topLeft, end: Alignment.bottomRight),
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: [BoxShadow(color: zenPurple.withOpacity(0.3), blurRadius: 25, offset: const Offset(0, 10))],
           ),
           child: Column(
             children: [
-              const Text(
-                'OVERALL MOOD STATUS',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white70,
-                ),
-              ),
+              const Text('CURRENT WELLNESS STATUS', style: TextStyle(color: Colors.white70, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 1.2)),
               const SizedBox(height: 10),
-              Text(
-                overallStatus,
-                style: const TextStyle(
-                  fontSize: 36,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 24),
+              Text(overallStatus, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 38)),
+              const SizedBox(height: 30),
               Row(
                 children: [
-                  Expanded(child: _buildInnerStatBox('TOTAL ENTRIES', '$totalMoods')),
-                  const SizedBox(width: 16),
-                  Expanded(child: _buildInnerStatBox('DOMINANT', dominantMood)),
+                  _buildMiniStat('TOTAL LOGS', '$totalMoods'),
+                  const SizedBox(width: 12),
+                  _buildMiniStat('TOP MOOD', dominantMood.toUpperCase()),
                 ],
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 20),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
-          decoration: BoxDecoration(
-            color: const Color(0xFF8CD2B6),
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'MOST FREQUENT MOOD',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white70,
-                    ),
-                  ),
-                  Text(
-                    dominantMood.toUpperCase(),
-                    style: const TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-              const Icon(Icons.insights_rounded, color: Colors.white, size: 42),
+              )
             ],
           ),
         ),
         const SizedBox(height: 24),
-        const Text(
-          "Today's Quick Insights",
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _buildInsightCard(
-                Icons.favorite_rounded,
-                'HAPPY',
-                '${_moodCounts['happy']}',
-                Colors.orange,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _buildInsightCard(
-                Icons.bedtime_rounded,
-                'SLEEPY',
-                '${_moodCounts['sleepy']}',
-                Colors.indigo,
-              ),
-            ),
-          ],
-        ),
+        _buildMoodInsightCard(),
       ],
     );
   }
 
-  Widget _buildDetailedSection() {
-    final items = [
-      {'label': 'SAD', 'value': _moodCounts['sad'] ?? 0, 'color': const Color(0xFFFFCDD2)},
-      {'label': 'NEUTRAL', 'value': _moodCounts['neutral'] ?? 0, 'color': const Color(0xFFE0E0E0)},
-      {'label': 'HAPPY', 'value': _moodCounts['happy'] ?? 0, 'color': const Color(0xFFFFF3C4)},
-      {'label': 'EXCITED', 'value': _moodCounts['excited'] ?? 0, 'color': const Color(0xFFFFE0B2)},
-      {'label': 'SLEEPY', 'value': _moodCounts['sleepy'] ?? 0, 'color': const Color(0xFFD1C4E9)},
-    ];
+  Widget _buildMiniStat(String label, String value) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 18),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          children: [
+            Text(label, style: const TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 4),
+            Text(value, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900)),
+          ],
+        ),
+      ),
+    );
+  }
 
+  Widget _buildDetailedSection() {
     return Column(
       children: [
-        SizedBox(
+        Container(
           height: 260,
+          padding: const EdgeInsets.fromLTRB(10, 24, 20, 16),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(28)),
           child: BarChart(
             BarChartData(
               alignment: BarChartAlignment.spaceAround,
@@ -376,255 +257,192 @@ class _MentalHealthReportPageState extends State<MentalHealthReportPage> {
               gridData: const FlGridData(show: false),
               borderData: FlBorderData(show: false),
               titlesData: FlTitlesData(
-                rightTitles: const AxisTitles(
-                  sideTitles: SideTitles(showTitles: false),
-                ),
-                topTitles: const AxisTitles(
-                  sideTitles: SideTitles(showTitles: false),
-                ),
-                leftTitles: const AxisTitles(
-                  sideTitles: SideTitles(showTitles: true, reservedSize: 28),
-                ),
+                leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 bottomTitles: AxisTitles(
                   sideTitles: SideTitles(
                     showTitles: true,
-                    getTitlesWidget: (value, meta) {
+                    getTitlesWidget: (v, m) {
                       const labels = ['Sad', 'Neu', 'Hap', 'Exc', 'Slp'];
-                      if (value.toInt() < 0 || value.toInt() >= labels.length) {
-                        return const SizedBox.shrink();
-                      }
+                      if (v.toInt() >= labels.length) return const SizedBox.shrink();
                       return Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Text(labels[value.toInt()]),
+                        padding: const EdgeInsets.only(top: 10),
+                        child: Text(labels[v.toInt()], style: const TextStyle(color: textLight, fontSize: 11, fontWeight: FontWeight.w700)),
                       );
-                    },
-                  ),
-                ),
+                    }
+                  )
+                )
               ),
               barGroups: [
-                _barGroup(0, (_moodCounts['sad'] ?? 0).toDouble()),
-                _barGroup(1, (_moodCounts['neutral'] ?? 0).toDouble()),
-                _barGroup(2, (_moodCounts['happy'] ?? 0).toDouble()),
-                _barGroup(3, (_moodCounts['excited'] ?? 0).toDouble()),
-                _barGroup(4, (_moodCounts['sleepy'] ?? 0).toDouble()),
+                _barGroup(0, (_moodCounts['sad'] ?? 0).toDouble(), Colors.redAccent),
+                _barGroup(1, (_moodCounts['neutral'] ?? 0).toDouble(), Colors.blueGrey),
+                _barGroup(2, (_moodCounts['happy'] ?? 0).toDouble(), Colors.orangeAccent),
+                _barGroup(3, (_moodCounts['excited'] ?? 0).toDouble(), Colors.purpleAccent),
+                _barGroup(4, (_moodCounts['sleepy'] ?? 0).toDouble(), Colors.indigoAccent),
               ],
             ),
           ),
         ),
         const SizedBox(height: 24),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: items.length,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-            childAspectRatio: 1.25,
-          ),
-          itemBuilder: (context, index) {
-            final item = items[index];
-            return Container(
-              decoration: BoxDecoration(
-                color: item['color'] as Color,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    item['label'] as String,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black54,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${item['value']}',
-                    style: const TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
+        ..._moodCounts.entries.map((e) => _buildMoodTile(e.key, e.value)).toList(),
       ],
+    );
+  }
+
+  Widget _buildMoodTile(String mood, int count) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+      child: Row(
+        children: [
+          CircleAvatar(
+            backgroundColor: background,
+            radius: 20,
+            child: Icon(_getMoodIcon(mood), size: 18, color: zenPurple),
+          ),
+          const SizedBox(width: 16),
+          Text(mood.toUpperCase(), style: const TextStyle(fontWeight: FontWeight.w800, color: textDark, letterSpacing: 0.5)),
+          const Spacer(),
+          Text('$count', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: zenPurple)),
+        ],
+      ),
     );
   }
 
   Widget _buildTimelineSection() {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(24),
-      ),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(28)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Last 7 Days Mood Activity',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-          ),
-          const SizedBox(height: 20),
+          const Text("WEEKLY ACTIVITY", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: textLight, letterSpacing: 1)),
+          const SizedBox(height: 24),
           SizedBox(
-            height: 260,
+            height: 220,
             child: LineChart(
               LineChartData(
-                minY: 0,
-                maxY: _lineMaxY(),
-                gridData: const FlGridData(show: true),
+                gridData: const FlGridData(show: false),
+                titlesData: const FlTitlesData(show: false),
                 borderData: FlBorderData(show: false),
-                titlesData: FlTitlesData(
-                  rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  leftTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: true, reservedSize: 28),
-                  ),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (value, meta) {
-                        if (value.toInt() < 0 || value.toInt() >= _weeklyMoodData.length) {
-                          return const SizedBox.shrink();
-                        }
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Text(_weeklyMoodData[value.toInt()]['day'].toString()),
-                        );
-                      },
-                    ),
-                  ),
-                ),
                 lineBarsData: [
                   LineChartBarData(
                     isCurved: true,
-                    spots: _weeklyMoodData.asMap().entries.map((entry) {
-                      return FlSpot(
-                        entry.key.toDouble(),
-                        (entry.value['count'] as int).toDouble(),
-                      );
-                    }).toList(),
-                    barWidth: 4,
+                    color: zenPurple,
+                    barWidth: 6,
                     isStrokeCapRound: true,
-                    dotData: const FlDotData(show: true),
-                    belowBarData: BarAreaData(show: true),
-                  ),
+                    dotData: FlDotData(
+                      show: true,
+                      getDotPainter: (spot, p, b, i) => FlDotCirclePainter(radius: 4, color: Colors.white, strokeWidth: 3, strokeColor: zenPurple),
+                    ),
+                    belowBarData: BarAreaData(show: true, gradient: LinearGradient(colors: [zenPurple.withOpacity(0.2), zenPurple.withOpacity(0)], begin: Alignment.topCenter, end: Alignment.bottomCenter)),
+                    spots: _weeklyMoodData.asMap().entries.map((e) => FlSpot(e.key.toDouble(), (e.value['count'] as int).toDouble())).toList(),
+                  )
+                ]
+              )
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMoodInsightCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)),
+      child: Row(
+        children: [
+          const Icon(Icons.auto_awesome_rounded, color: Colors.amber, size: 28),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text("Wellness Tip", style: TextStyle(color: textLight, fontWeight: FontWeight.w700, fontSize: 12)),
+                Text("Consistency is key! You've logged $totalMoods moods this week.", 
+                  style: const TextStyle(color: textDark, fontWeight: FontWeight.w800, fontSize: 14)),
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildZenDrawer() {
+    return Drawer(
+      child: Column(
+        children: [
+          const DrawerHeader(
+            decoration: BoxDecoration(gradient: LinearGradient(colors: [zenPurple, primaryIndigo])),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.spa_rounded, color: Colors.white, size: 40),
+                  SizedBox(height: 10),
+                  Text("ZenWave", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
           ),
+          _drawerItem(Icons.home_rounded, "Home", "/home"),
+          _drawerItem(Icons.chat_bubble_rounded, "Chatbot", "/chatbot"),
+          _drawerItem(Icons.book_rounded, "Journaling", "/journaling"),
+          _drawerItem(Icons.insights_rounded, "Report", null, active: true),
+          const Spacer(),
+          const Divider(),
+          _drawerItem(Icons.logout_rounded, "Logout", "/login", isLogout: true),
+          const SizedBox(height: 20),
         ],
       ),
     );
   }
 
-  Widget _buildInnerStatBox(String title, String value) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.18),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-              color: Colors.white70,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-              color: Colors.white,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInsightCard(IconData icon, String title, String value, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 26),
-          const SizedBox(height: 10),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDrawerItem(IconData icon, String label, {required VoidCallback onTap}) {
+  Widget _drawerItem(IconData icon, String label, String? route, {bool active = false, bool isLogout = false}) {
     return ListTile(
-      leading: Icon(icon, color: const Color(0xFF9147FF)),
-      title: Text(label),
-      onTap: onTap,
+      leading: Icon(icon, color: active ? zenPurple : textLight),
+      title: Text(label, style: TextStyle(color: active ? zenPurple : textDark, fontWeight: active ? FontWeight.bold : FontWeight.normal)),
+      onTap: () async {
+        if (isLogout) {
+          try { await ApiService.logout(); } catch (_) {}
+          if (mounted) Navigator.pushReplacementNamed(context, route!);
+        } else if (route != null) {
+          Navigator.pushReplacementNamed(context, route);
+        } else {
+          Navigator.pop(context);
+        }
+      },
     );
   }
 
-  BarChartGroupData _barGroup(int x, double y) {
-    return BarChartGroupData(
-      x: x,
-      barRods: [
-        BarChartRodData(
-          toY: y,
-          width: 20,
-          borderRadius: BorderRadius.circular(6),
-        ),
-      ],
-    );
+  IconData _getMoodIcon(String mood) {
+    switch (mood.toLowerCase()) {
+      case 'sad': return Icons.sentiment_dissatisfied_rounded;
+      case 'happy': return Icons.sentiment_satisfied_alt_rounded;
+      case 'excited': return Icons.auto_awesome_rounded;
+      case 'sleepy': return Icons.bedtime_rounded;
+      default: return Icons.sentiment_neutral_rounded;
+    }
+  }
+
+  BarChartGroupData _barGroup(int x, double y, Color color) {
+    return BarChartGroupData(x: x, barRods: [
+      BarChartRodData(
+        toY: y, 
+        color: color, 
+        width: 22, 
+        borderRadius: BorderRadius.circular(6),
+        backDrawRodData: BackgroundBarChartRodData(show: true, toY: _calculateMaxY(), color: background)
+      )
+    ]);
   }
 
   double _calculateMaxY() {
     final maxValue = _moodCounts.values.fold<int>(0, (a, b) => a > b ? a : b);
-    return maxValue < 5 ? 5 : (maxValue + 2).toDouble();
-  }
-
-  double _lineMaxY() {
-    int maxValue = 0;
-    for (final item in _weeklyMoodData) {
-      final count = item['count'] as int;
-      if (count > maxValue) maxValue = count;
-    }
     return maxValue < 5 ? 5 : (maxValue + 2).toDouble();
   }
 }
