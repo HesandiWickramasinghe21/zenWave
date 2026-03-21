@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/local_storage.dart';
@@ -57,7 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: bgSlate,
+      backgroundColor: const Color.fromARGB(255, 236, 242, 255),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: primaryIndigo))
           : CustomScrollView(
@@ -89,34 +90,44 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildSliverAppBar() {
+Widget _buildSliverAppBar() {
     return SliverAppBar(
       expandedHeight: 120,
-      backgroundColor: bgSlate,
+      // Make background transparent to let the blur show through
+      backgroundColor: Colors.transparent, 
+      elevation: 0,
+      pinned: true, // Keeps a blurred strip at the top when scrolling
       automaticallyImplyLeading: false,
-      flexibleSpace: FlexibleSpaceBar(
-        background: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.start,
+      flexibleSpace: ClipRRect( // Ensures the blur doesn't spill outside
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10), // The "Blurred" effect
+          child: FlexibleSpaceBar(
+            background: Container(
+              // Mixing Blue + White with low opacity for the frosted look
+              color: Colors.white.withOpacity(0.2), 
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text("Hello, $_displayName",
-                      style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: textDark)),
-                  const Text("Ready to find your zen?",
-                      style: TextStyle(fontSize: 16, color: textLight, fontWeight: FontWeight.w500)),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("Hello, $_displayName",
+                          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: textDark)),
+                      const Text("Ready to find your zen?",
+                          style: TextStyle(fontSize: 16, color: textLight, fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                  const CircleAvatar(
+                    radius: 25,
+                    backgroundColor: Colors.white,
+                    child: Icon(Icons.person_outline_rounded, color: primaryIndigo),
+                  ),
                 ],
               ),
-              const CircleAvatar(
-                radius: 25,
-                backgroundColor: Colors.white,
-                child: Icon(Icons.person_outline_rounded, color: primaryIndigo),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -173,9 +184,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [primaryIndigo, primaryIndigo.withOpacity(0.8)]),
+        gradient: LinearGradient(colors: [const Color.fromARGB(255, 181, 135, 188), const Color.fromARGB(255, 219, 188, 227).withOpacity(0.8)]),
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: primaryIndigo.withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10))],
+        boxShadow: [BoxShadow(color: const Color.fromARGB(255, 220, 134, 235).withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 10))],
       ),
       child: Row(
         children: [
