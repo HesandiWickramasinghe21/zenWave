@@ -58,7 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 236, 242, 255),
+      backgroundColor: const Color.fromARGB(255, 239, 242, 247),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: primaryIndigo))
           : CustomScrollView(
