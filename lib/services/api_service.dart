@@ -142,18 +142,25 @@ class ApiService {
     }
   }
 
-  // 7. FORGOT PASSWORD
+// 7. FORGOT PASSWORD (UPDATED)
   static Future<void> forgotPassword(String email) async {
     final url = Uri.parse("$baseUrl/forgot-password");
 
-    final res = await http.post(
-      url,
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({"email": email}),
-    );
+    try {
+      final res = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"email": email}),
+      );
 
-    if (res.statusCode != 200) {
-      throw Exception("Email not found");
+      if (res.statusCode != 200) {
+        // This will show the real error from your FastAPI backend
+        final errorData = jsonDecode(res.body);
+        throw Exception(errorData["detail"] ?? "Server Error: ${res.statusCode}");
+      }
+    } catch (e) {
+      // If the server is offline or the URL is wrong, this catches it
+      throw Exception("Connection Error: Check if your Backend is running.");
     }
   }
 
