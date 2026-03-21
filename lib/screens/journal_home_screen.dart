@@ -5,22 +5,21 @@ class JournalHomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool isDark = Theme.of(context).brightness == Brightness.dark;
-
     // ZenWave Project Colors
     const Color zenPurple = Color(0xFF6A1B9A);
     const Color zenAccent = Color(0xFF6366F1);
 
     return Scaffold(
-      // Matching the Auth background gradient
+      extendBodyBehindAppBar: true,
+      // Same Background as Profile & Settings
       body: Container(
-        decoration: BoxDecoration(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: isDark
-                ? [const Color(0xFF0F0F1A), const Color(0xFF1C1B29)]
-                : [const Color(0xFFEDE7F6), const Color(0xFFD1C4E9)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            colors: [Color(0xFFF8FAFC), Color(0xFFEEF2FF)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
         ),
         child: SafeArea(
@@ -36,22 +35,23 @@ class JournalHomeScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
-                      "Journal",
+                      "JOURNAL",
                       style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF2D3142),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.black54,
+                        letterSpacing: 2,
                       ),
                     ),
                     IconButton(
                       onPressed: () {},
-                      icon: const Icon(Icons.calendar_month_rounded, color: zenPurple),
+                      icon: const Icon(Icons.calendar_month_rounded, color: zenPurple, size: 22),
                     ),
                   ],
                 ),
                 const SizedBox(height: 25),
 
-                // DAILY PROMPT CARD (Updated to ZenWave Purple)
+                // DAILY PROMPT CARD
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(24),
@@ -82,7 +82,7 @@ class JournalHomeScreen extends StatelessWidget {
                             style: TextStyle(
                               color: Colors.white70,
                               fontWeight: FontWeight.bold,
-                              fontSize: 12,
+                              fontSize: 11,
                               letterSpacing: 1.2,
                             ),
                           ),
@@ -104,10 +104,11 @@ class JournalHomeScreen extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: zenPurple,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                           elevation: 0,
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                         ),
-                        child: const Text("Reflect Now", style: TextStyle(fontWeight: FontWeight.bold)),
+                        child: const Text("Reflect Now", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 13)),
                       ),
                     ],
                   ),
@@ -115,12 +116,17 @@ class JournalHomeScreen extends StatelessWidget {
 
                 const SizedBox(height: 35),
                 const Text(
-                  "Your Journey",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2D3142)),
+                  "YOUR JOURNEY",
+                  style: TextStyle(
+                    fontSize: 12, 
+                    fontWeight: FontWeight.w900, 
+                    color: Colors.black54,
+                    letterSpacing: 1.5,
+                  ),
                 ),
                 const SizedBox(height: 16),
 
-                // NAVIGATION GRID (Using Glassmorphism style)
+                // NAVIGATION GRID
                 Row(
                   children: [
                     Expanded(
@@ -145,13 +151,20 @@ class JournalHomeScreen extends StatelessWidget {
 
                 const SizedBox(height: 30),
 
-                // TIP BOX (Matching the glass style)
+                // TIP BOX
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.4),
+                    color: Colors.white.withOpacity(0.7),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white.withOpacity(0.2)),
+                    border: Border.all(color: Colors.white),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.03),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      )
+                    ],
                   ),
                   child: const Row(
                     children: [
@@ -160,13 +173,17 @@ class JournalHomeScreen extends StatelessWidget {
                       Expanded(
                         child: Text(
                           "Journaling daily helps reduce stress by 40%!",
-                          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w500, fontSize: 14),
+                          style: TextStyle(
+                            color: Color(0xFF1E293B), 
+                            fontWeight: FontWeight.w600, 
+                            fontSize: 13,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 100), // Space for bottom nav
+                const SizedBox(height: 100), 
               ],
             ),
           ),
@@ -181,20 +198,37 @@ class JournalHomeScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.6),
+          color: Colors.white.withOpacity(0.8),
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.white.withOpacity(0.3)),
+          border: Border.all(color: Colors.white),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            )
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CircleAvatar(
-              backgroundColor: color.withOpacity(0.1),
-              radius: 20,
-              child: Icon(icon, color: color, size: 22),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 24),
             ),
             const SizedBox(height: 20),
-            Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF2D3142))),
+            Text(
+              title, 
+              style: const TextStyle(
+                fontWeight: FontWeight.w700, 
+                fontSize: 14, 
+                color: Color(0xFF1E293B),
+              ),
+            ),
           ],
         ),
       ),
