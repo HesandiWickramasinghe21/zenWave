@@ -15,9 +15,6 @@ class MainWrapper extends StatefulWidget {
 class _MainWrapperState extends State<MainWrapper> {
   int _selectedIndex = 0;
 
-  // Palette
-  static const Color borderLight = Color(0xFFE5E5E5);
-
   final List<Widget> _screens = [
     const HomeScreen(),
     const ChatbotScreen(),
@@ -26,46 +23,54 @@ class _MainWrapperState extends State<MainWrapper> {
     const UserProfileScreen(),
   ];
 
-  // Map each tab to a specific vibrant color
+  // Refined palette to match Journaling Screen
   Color _getTabColor(int index) {
     switch (index) {
-      case 0: return const Color(0xFF9147FF); // Purple
-      case 1: return const Color(0xFFFF9600); // Orange
-      case 2: return const Color(0xFF22C55E); // Green
-      case 3: return const Color(0xFF00A3FF); // Blue
-      case 4: return const Color(0xFFFF5252); // Red
-      default: return const Color(0xFF9147FF);
+      case 0: return const Color(0xFF6366F1); // Indigo (Home)
+      case 1: return const Color(0xFFF59E0B); // Amber (Chat)
+      case 2: return const Color(0xFF10B981); // Emerald (Journal)
+      case 3: return const Color(0xFF3B82F6); // Blue (Report)
+      case 4: return const Color(0xFFEC4899); // Pink (Profile)
+      default: return const Color(0xFF6366F1);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF3EFFF),
+      backgroundColor: const Color(0xFFF8FAFC), // Slate 50 (Zen Background)
       body: IndexedStack(
         index: _selectedIndex,
         children: _screens,
       ),
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          border: Border(
-            top: BorderSide(color: borderLight, width: 2),
+      bottomNavigationBar: _buildBottomNav(),
+    );
+  }
+
+  Widget _buildBottomNav() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 20,
+            offset: const Offset(0, -4),
           ),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.only(top: 12, bottom: 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(0, Icons.home_rounded, 'HOME'),
-                _buildNavItem(1, Icons.chat_bubble_rounded, 'CHAT'),
-                _buildNavItem(2, Icons.book_rounded, 'JOURNAL'),
-                _buildNavItem(3, Icons.bar_chart_rounded, 'REPORT'),
-                _buildNavItem(4, Icons.person_rounded, 'PROFILE'),
-              ],
-            ),
+        ],
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildNavItem(0, Icons.home_rounded, 'HOME'),
+              _buildNavItem(1, Icons.chat_bubble_rounded, 'CHAT'),
+              _buildNavItem(2, Icons.book_rounded, 'JOURNAL'),
+              _buildNavItem(3, Icons.bar_chart_rounded, 'REPORT'),
+              _buildNavItem(4, Icons.person_rounded, 'PROFILE'),
+            ],
           ),
         ),
       ),
@@ -75,50 +80,39 @@ class _MainWrapperState extends State<MainWrapper> {
   Widget _buildNavItem(int index, IconData icon, String label) {
     bool isSelected = _selectedIndex == index;
     Color baseColor = _getTabColor(index);
-    
-    // Inactive color is now a faded version of the base color instead of Gray
-    Color inactiveColor = baseColor.withOpacity(0.4); 
+    Color inactiveColor = const Color(0xFF94A3B8); // Soft Slate Gray for non-active
 
     return GestureDetector(
       onTap: () => setState(() => _selectedIndex = index),
       behavior: HitTestBehavior.opaque,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: isSelected ? baseColor.withOpacity(0.15) : Colors.transparent,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: isSelected ? baseColor : Colors.transparent,
-                width: 2,
-              ),
-              boxShadow: isSelected ? [
-                BoxShadow(
-                  color: baseColor.withOpacity(0.3), 
-                  offset: const Offset(0, 4),
-                )
-              ] : null,
-            ),
-            child: Icon(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? baseColor.withOpacity(0.1) : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
               icon,
-              color: isSelected ? baseColor : inactiveColor, // NO MORE GRAY!
-              size: 28,
+              color: isSelected ? baseColor : inactiveColor,
+              size: 26,
             ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            style: TextStyle(
-              color: isSelected ? baseColor : inactiveColor, // Text matches icon
-              fontWeight: FontWeight.w900,
-              fontSize: 10,
-              letterSpacing: 0.8,
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? baseColor : inactiveColor,
+                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w500,
+                fontSize: 10,
+                letterSpacing: 0.5,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
