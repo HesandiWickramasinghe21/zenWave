@@ -235,34 +235,46 @@ class _SplashLoginScreenState extends State<SplashLoginScreen>
     );
   }
 
-  Widget loginUI() {
+Widget loginUI() {
     return glassBackground(
       Column(
         key: const ValueKey(2),
         mainAxisSize: MainAxisSize.min,
         children: [
-          Image.asset('assets/zenwave_logo.png', height: 110),
-          const SizedBox(height: 20),
+          // This moves the logo down slightly within the box
+          Padding(
+            padding: const EdgeInsets.only(top: 20.0, bottom: 10.0), 
+            child: Image.asset(
+              'assets/zenwave_logo.png', 
+              height: 160, // Set to 160 for a nice large but balanced look
+              fit: BoxFit.contain,
+            ),
+          ),
           Text(
             "Welcome Back",
             style: TextStyle(
-              fontSize: 24,
+              fontSize: 26, // Slightly larger font to match bigger logo
               fontWeight: FontWeight.bold,
               color: isDark ? Colors.white : Colors.black87,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Text(
             "Please sign in to continue",
-            style: TextStyle(color: isDark ? Colors.white70 : Colors.black54),
+            style: TextStyle(
+                fontSize: 15,
+                color: isDark ? Colors.white70 : Colors.black54),
           ),
           const SizedBox(height: 30),
+
+          // ... rest of your TextFields and Buttons ...
           TextField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
             decoration: inputStyle(icon: Icons.email, hint: "Email"),
           ),
           const SizedBox(height: 15),
+
           TextField(
             controller: _passwordController,
             obscureText: hidePassword,
@@ -277,6 +289,7 @@ class _SplashLoginScreenState extends State<SplashLoginScreen>
               ),
             ),
           ),
+
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
@@ -284,7 +297,9 @@ class _SplashLoginScreenState extends State<SplashLoginScreen>
               child: const Text("Forgot Password?"),
             ),
           ),
+
           const SizedBox(height: 10),
+
           SizedBox(
             width: double.infinity,
             height: 50,
@@ -308,7 +323,9 @@ class _SplashLoginScreenState extends State<SplashLoginScreen>
                     ),
             ),
           ),
+
           const SizedBox(height: 20),
+
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
