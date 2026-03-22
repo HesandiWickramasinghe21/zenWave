@@ -4,6 +4,7 @@ import 'chatbot_screen.dart';
 import 'journal_home_screen.dart'; 
 import 'mental_health_report.dart';
 import 'user_profile_screen.dart';
+import 'dart:ui';
 
 class MainWrapper extends StatefulWidget {
   const MainWrapper({super.key});
@@ -15,8 +16,9 @@ class MainWrapper extends StatefulWidget {
 class _MainWrapperState extends State<MainWrapper> {
   int _selectedIndex = 0;
 
-  // Palette
-  static const Color borderLight = Color(0xFFE5E5E5);
+  // ZenWave Primary Colors
+  static const Color zenPurple = Color(0xFF6A1B9A);
+  static const Color zenAccent = Color(0xFF6366F1);
 
   final List<Widget> _screens = [
     const HomeScreen(),
@@ -26,36 +28,44 @@ class _MainWrapperState extends State<MainWrapper> {
     const UserProfileScreen(),
   ];
 
-  // Map each tab to a specific vibrant color
-  Color _getTabColor(int index) {
-    switch (index) {
-      case 0: return const Color(0xFF9147FF); // Purple
-      case 1: return const Color(0xFFFF9600); // Orange
-      case 2: return const Color(0xFF22C55E); // Green
-      case 3: return const Color(0xFF00A3FF); // Blue
-      case 4: return const Color(0xFFFF5252); // Red
-      default: return const Color(0xFF9147FF);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    bool isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      extendBody: true, // Allows the body to flow behind the glass bar
+      backgroundColor: isDark ? const Color(0xFF0F0F1A) : const Color(0xFFF8FAFC),
       body: IndexedStack(
         index: _selectedIndex,
         children: _screens,
       ),
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          border: Border(
-            top: BorderSide(color: borderLight, width: 2),
+      bottomNavigationBar: _buildGlassBottomNav(isDark),
+    );
+  }
+
+  Widget _buildGlassBottomNav(bool isDark) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(20, 0, 20, 20), // Floating effect
+      height: 75,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.only(top: 12, bottom: 12),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(30),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            color: isDark 
+                ? Colors.white.withOpacity(0.05) 
+                : Colors.white.withOpacity(0.7),
+            padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -74,51 +84,42 @@ class _MainWrapperState extends State<MainWrapper> {
 
   Widget _buildNavItem(int index, IconData icon, String label) {
     bool isSelected = _selectedIndex == index;
-    Color baseColor = _getTabColor(index);
-    
-    // Inactive color is now a faded version of the base color instead of Gray
-    Color inactiveColor = baseColor.withOpacity(0.4); 
+    Color activeColor = zenPurple;
+    Color inactiveColor = const Color(0xFF94A3B8);
 
     return GestureDetector(
       onTap: () => setState(() => _selectedIndex = index),
       behavior: HitTestBehavior.opaque,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: isSelected ? baseColor.withOpacity(0.15) : Colors.transparent,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: isSelected ? baseColor : Colors.transparent,
-                width: 2,
-              ),
-              boxShadow: isSelected ? [
-                BoxShadow(
-                  color: baseColor.withOpacity(0.3), 
-                  offset: const Offset(0, 4),
-                )
-              ] : null,
-            ),
-            child: Icon(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? activeColor.withOpacity(0.1) : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
               icon,
-              color: isSelected ? baseColor : inactiveColor, // NO MORE GRAY!
-              size: 28,
+              color: isSelected ? activeColor : inactiveColor,
+              size: 26,
             ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            style: TextStyle(
-              color: isSelected ? baseColor : inactiveColor, // Text matches icon
-              fontWeight: FontWeight.w900,
-              fontSize: 10,
-              letterSpacing: 0.8,
-            ),
-          ),
-        ],
+            if (isSelected) // Only show label when selected for a cleaner look
+              Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: activeColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 10,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

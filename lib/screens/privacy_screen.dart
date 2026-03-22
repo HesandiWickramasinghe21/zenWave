@@ -53,7 +53,7 @@ class _PrivacyScreenState extends State<PrivacyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: bg,
+      backgroundColor: const Color(0xFFF3EFFF),
       appBar: AppBar(
         backgroundColor: bg,
         elevation: 0,

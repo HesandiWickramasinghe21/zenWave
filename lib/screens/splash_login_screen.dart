@@ -1,7 +1,5 @@
 import 'dart:async';
-import 'dart:math';
 import 'package:flutter/material.dart';
-
 import '../services/api_service.dart';
 import 'signup_screen.dart';
 import 'forgot_password_screen.dart';
@@ -17,22 +15,28 @@ class _SplashLoginScreenState extends State<SplashLoginScreen>
     with SingleTickerProviderStateMixin {
   bool showLogin = false;
   bool hidePassword = true;
-
-  late AnimationController _waveController;
+  
+  // Loading trackers for perfect synchronization
+  bool _heroLoaded = false;
+  bool _bgLoaded = false;
+  bool get _everythingLoaded => _heroLoaded && _bgLoaded;
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Start precaching as soon as context is available
+    precacheImage(const AssetImage('assets/hero.png'), context);
+    precacheImage(const AssetImage('assets/splash_bg.png'), context);
+  }
+
+  @override
   void initState() {
     super.initState();
-
-    _waveController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 5),
-    )..repeat();
-
+    // The delay before switching from Splash to Login
     Timer(const Duration(seconds: 3), () {
       if (mounted) setState(() => showLogin = true);
     });
@@ -40,7 +44,6 @@ class _SplashLoginScreenState extends State<SplashLoginScreen>
 
   @override
   void dispose() {
-    _waveController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -54,7 +57,8 @@ class _SplashLoginScreenState extends State<SplashLoginScreen>
     );
   }
 
-  // LOGIN FUNCTION
+  // --- NAVIGATION & LOGIC METHODS ---
+
   Future<void> _handleLogin() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
@@ -68,16 +72,11 @@ class _SplashLoginScreenState extends State<SplashLoginScreen>
 
     try {
       await ApiService.login(email, password);
-
-      // profile returns Map<String, dynamic>
       final data = await ApiService.profile();
       final msg = (data["message"] ?? "Login success").toString();
 
       if (!mounted) return;
-
       _showSnack(msg);
-
-      // Navigate to Home screen
       Navigator.pushReplacementNamed(context, "/home");
     } catch (e) {
       if (!mounted) return;
@@ -87,7 +86,6 @@ class _SplashLoginScreenState extends State<SplashLoginScreen>
     }
   }
 
-  // Open signup screen
   void _goToSignup() {
     Navigator.push(
       context,
@@ -95,7 +93,6 @@ class _SplashLoginScreenState extends State<SplashLoginScreen>
     );
   }
 
-  // Open forgot password screen
   void _goToForgotPassword() {
     Navigator.push(
       context,
@@ -113,112 +110,97 @@ class _SplashLoginScreenState extends State<SplashLoginScreen>
     );
   }
 
-  // SPLASH BACKGROUND
-  Widget splashBackground(Widget child) {
-    final screenWidth = MediaQuery.of(context).size.width;
+  // --- SPLASH WIDGETS ---
 
+  Widget splashBackground(Widget child) {
     return Stack(
-      alignment: Alignment.center,
       children: [
-        Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: isDark
-                  ? [const Color(0xFF1E1E2C), const Color(0xFF121212)]
-                  : [const Color(0xFFF8F4FF), const Color(0xFFE1D1FF)],
-            ),
+        Positioned.fill(
+          child: Image.asset(
+            'assets/splash_bg.png',
+            fit: BoxFit.cover,
+            frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+              if (wasSynchronouslyLoaded || frame != null) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted && !_bgLoaded) setState(() => _bgLoaded = true);
+                });
+              }
+              return child;
+            },
           ),
         ),
-        AnimatedBuilder(
-          animation: _waveController,
-          builder: (_, __) {
-            return Positioned(
-              bottom: -140,
-              left: (screenWidth / 2) -
-                  210 +
-                  sin(_waveController.value * 2 * pi) * 25,
-              child: Transform.rotate(
-                angle: -0.6,
-                child: Container(
-                  width: 420,
-                  height: 320,
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? Colors.deepPurple.withOpacity(0.22)
-                        : Colors.deepPurple.withOpacity(0.28),
-                    borderRadius: BorderRadius.circular(140),
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
+        if (isDark)
+          Positioned.fill(
+            child: Container(color: Colors.black.withOpacity(0.4)),
+          ),
         SafeArea(child: child),
       ],
     );
   }
 
-  // SPLASH UI
   Widget splashUI() {
     return splashBackground(
-      Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 420),
-          child: Column(
-            key: const ValueKey(1),
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                width: 160,
-                height: 160,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  image: DecorationImage(
-                    image: AssetImage('assets/zenwave_logo.png'),
+      AnimatedOpacity(
+        opacity: _everythingLoaded ? 1.0 : 0.0,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeIn,
+        child: Center(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 40),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    'assets/hero.png',
+                    height: MediaQuery.of(context).size.height * 0.45,
                     fit: BoxFit.contain,
+                    frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                      if (wasSynchronouslyLoaded || frame != null) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (mounted && !_heroLoaded) setState(() => _heroLoaded = true);
+                        });
+                      }
+                      return child;
+                    },
                   ),
-                ),
+                  const SizedBox(height: 40),
+                  Text(
+                    "ZenWave",
+                    style: TextStyle(
+                      fontSize: 52,
+                      fontWeight: FontWeight.w400,
+                      color: isDark ? Colors.white : const Color(0xFF2D3142),
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    "Therapeutic Chatbot API\nfor emotional and cognitive wellness",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 17,
+                      height: 1.4,
+                      fontWeight: FontWeight.w400,
+                      color: isDark ? Colors.white70 : const Color(0xFF4F5D75),
+                    ),
+                  ),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.1),
+                ],
               ),
-              const SizedBox(height: 30),
-              Text(
-                "ZenWave",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 34,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 30),
-              Text(
-                "Therapeutic Chatbot API\nfor emotional and cognitive wellness",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 15,
-                  color: isDark ? Colors.white70 : Colors.black54,
-                ),
-              ),
-              const SizedBox(height: 80),
-              Text(
-                "Developed by DEVSQUAD",
-                style: TextStyle(
-                  fontSize: 12,
-                  color: isDark ? Colors.white54 : Colors.black45,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  // GLASS BACKGROUND
+  // --- LOGIN WIDGETS ---
+
   Widget glassBackground(Widget child) {
     return Container(
+      width: double.infinity,
+      height: double.infinity,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: isDark
@@ -234,46 +216,58 @@ class _SplashLoginScreenState extends State<SplashLoginScreen>
       ),
       child: SafeArea(
         child: Center(
-          child: Container(
-            width: 420,
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.white.withOpacity(0.08)
-                  : Colors.white.withOpacity(0.30),
-              borderRadius: BorderRadius.circular(24),
+          child: SingleChildScrollView(
+            child: Container(
+              width: 420,
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Colors.white.withOpacity(0.08)
+                    : Colors.white.withOpacity(0.30),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: child,
             ),
-            child: child,
           ),
         ),
       ),
     );
   }
 
-  // LOGIN UI
-  Widget loginUI() {
+Widget loginUI() {
     return glassBackground(
       Column(
         key: const ValueKey(2),
         mainAxisSize: MainAxisSize.min,
         children: [
-          Image.asset('assets/zenwave_logo.png', height: 110),
-          const SizedBox(height: 20),
+          // This moves the logo down slightly within the box
+          Padding(
+            padding: const EdgeInsets.only(top: 20.0, bottom: 10.0), 
+            child: Image.asset(
+              'assets/zenwave_logo.png', 
+              height: 160, // Set to 160 for a nice large but balanced look
+              fit: BoxFit.contain,
+            ),
+          ),
           Text(
             "Welcome Back",
             style: TextStyle(
-              fontSize: 24,
+              fontSize: 26, // Slightly larger font to match bigger logo
               fontWeight: FontWeight.bold,
               color: isDark ? Colors.white : Colors.black87,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Text(
             "Please sign in to continue",
-            style: TextStyle(color: isDark ? Colors.white70 : Colors.black54),
+            style: TextStyle(
+                fontSize: 15,
+                color: isDark ? Colors.white70 : Colors.black54),
           ),
           const SizedBox(height: 30),
 
+          // ... rest of your TextFields and Buttons ...
           TextField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
@@ -299,7 +293,6 @@ class _SplashLoginScreenState extends State<SplashLoginScreen>
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
-              // opens forgot password screen
               onPressed: _goToForgotPassword,
               child: const Text("Forgot Password?"),
             ),
@@ -322,7 +315,7 @@ class _SplashLoginScreenState extends State<SplashLoginScreen>
                   ? const SizedBox(
                       width: 22,
                       height: 22,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                     )
                   : const Text(
                       "Sign in",
@@ -354,7 +347,6 @@ class _SplashLoginScreenState extends State<SplashLoginScreen>
     );
   }
 
-  // INPUT STYLE
   InputDecoration inputStyle({
     required IconData icon,
     required String hint,
@@ -370,6 +362,6 @@ class _SplashLoginScreenState extends State<SplashLoginScreen>
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide.none,
       ),
-    );
+    ); 
   }
 }

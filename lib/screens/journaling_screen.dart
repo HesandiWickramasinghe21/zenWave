@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 
 class JournalingScreen extends StatefulWidget {
@@ -11,201 +12,211 @@ class _JournalingScreenState extends State<JournalingScreen> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
   int _wordCount = 0;
-  String _selectedEmoji = "😊";
 
-  // Palette
-  static const Color zenPurple = Color(0xFF9147FF);
-  static const Color borderLight = Color(0xFFE5E5E5);
+  // ZenWave Project Palette
+  static const Color zenPurple = Color(0xFF6A1B9A);
+  static const Color zenAccent = Color(0xFF6366F1);
+  static const Color textDark = Color(0xFF1E293B); // Matching your other screens
 
   @override
   void initState() {
     super.initState();
-    _contentController.addListener(() {
-      final text = _contentController.text.trim();
-      setState(() {
-        _wordCount = text.isEmpty ? 0 : text.split(RegExp(r'\s+')).length;
-      });
+    _contentController.addListener(_handleWordCount);
+  }
+
+  void _handleWordCount() {
+    final text = _contentController.text.trim();
+    setState(() {
+      _wordCount = text.isEmpty ? 0 : text.split(RegExp(r'\s+')).length;
     });
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _contentController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        title: Row(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.close_rounded, color: Colors.black45, size: 30),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(20),
-                child: const LinearProgressIndicator(
-                  value: 0.4, // Visual "progress" through the journal entry
-                  backgroundColor: borderLight,
-                  valueColor: AlwaysStoppedAnimation<Color>(zenPurple),
-                  minHeight: 12,
+      extendBodyBehindAppBar: true,
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        // --- MATCHED BACKGROUND ---
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFF8FAFC), Color(0xFFEEF2FF)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              _buildCustomAppBar(context),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "REFLECT",
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.black54,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        "How are you feeling today?",
+                        style: TextStyle(
+                          fontSize: 16, 
+                          color: Colors.black45,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+
+                      // GLASS INPUT CONTAINER
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.8),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: Colors.white),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.03),
+                              blurRadius: 20,
+                              offset: const Offset(0, 10),
+                            )
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            TextField(
+                              controller: _titleController,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: textDark,
+                              ),
+                              decoration: const InputDecoration(
+                                hintText: "Title of your story...",
+                                hintStyle: TextStyle(color: Colors.black26),
+                                border: InputBorder.none,
+                              ),
+                            ),
+                            const Divider(height: 30, thickness: 1, color: Color(0xFFF1F5F9)),
+                            TextField(
+                              controller: _contentController,
+                              maxLines: 12,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: textDark,
+                                height: 1.5,
+                              ),
+                              decoration: const InputDecoration(
+                                hintText: "Write your heart out...",
+                                hintStyle: TextStyle(color: Colors.black26),
+                                border: InputBorder.none,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 12),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          "$_wordCount words",
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12,
+                            color: Colors.black26,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+
+                      // MATCHED BIG SAVE BUTTON
+                      _buildBigSaveButton(),
+                      const SizedBox(height: 40),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: 15),
-            const Icon(Icons.favorite, color: Colors.redAccent),
-          ],
+            ],
+          ),
         ),
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "How are you feeling?",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: -0.5),
-            ),
-            const SizedBox(height: 15),
-            
-            // MOOD SELECTOR (Duo attraction feature)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: ["😊", "😔", "😤", "😴", "🧠"].map((emoji) {
-                bool isSelected = _selectedEmoji == emoji;
-                return GestureDetector(
-                  onTap: () => setState(() => _selectedEmoji = emoji),
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: isSelected ? zenPurple.withOpacity(0.1) : Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isSelected ? zenPurple : borderLight,
-                        width: 2,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: isSelected ? zenPurple.withOpacity(0.2) : borderLight,
-                          offset: const Offset(0, 4),
-                        )
-                      ],
-                    ),
-                    child: Text(emoji, style: const TextStyle(fontSize: 24)),
-                  ),
-                );
-              }).toList(),
-            ),
-            
-            const SizedBox(height: 30),
+    );
+  }
 
-            // TITLE INPUT
-            _buildDuoInput(
-              controller: _titleController,
-              hint: "Title of your story...",
-              isTitle: true,
-            ),
-            
-            const SizedBox(height: 16),
+  Widget _buildCustomAppBar(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black54, size: 20),
+            onPressed: () => Navigator.pop(context),
+          ),
+          IconButton(
+            icon: const Icon(Icons.more_horiz_rounded, color: Colors.black54),
+            onPressed: () {},
+          ),
+        ],
+      ),
+    );
+  }
 
-            // CONTENT INPUT
-            Stack(
-              alignment: Alignment.bottomRight,
-              children: [
-                _buildDuoInput(
-                  controller: _contentController,
-                  hint: "Write your heart out...",
-                  isTitle: false,
-                  maxLines: 10,
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: bgSoft,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: borderLight),
-                    ),
-                    child: Text(
-                      "$_wordCount words",
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black38),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            
-            const SizedBox(height: 40),
-
-            // SAVE BUTTON (The "Duo" Green Button)
-            GestureDetector(
-              onTap: () {
-                // Success logic here
-              },
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 18),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF58CC02), // Duolingo Green
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: const [
-                    BoxShadow(color: Color(0xFF46A302), offset: Offset(0, 5)), // Darker green bottom
-                  ],
-                ),
-                child: const Center(
-                  child: Text(
-                    "SAVE ENTRY",
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 1.2),
-                  ),
-                ),
-              ),
-            ),
-            
-            const SizedBox(height: 20),
-            Center(
-              child: TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text("CAN'T WRITE NOW", style: TextStyle(color: Colors.black26, fontWeight: FontWeight.w900)),
-              ),
+  Widget _buildBigSaveButton() {
+    return GestureDetector(
+      onTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Reflection saved to your journey ✨"),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: zenPurple,
+          ),
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 18),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(colors: [zenPurple, zenAccent]),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: zenPurple.withOpacity(0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
             )
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildDuoInput({
-    required TextEditingController controller,
-    required String hint,
-    required bool isTitle,
-    int? maxLines = 1,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFFF7F8FA),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: borderLight, width: 2),
-      ),
-      child: TextField(
-        controller: controller,
-        maxLines: maxLines,
-        style: TextStyle(
-          fontSize: isTitle ? 20 : 16,
-          fontWeight: isTitle ? FontWeight.w800 : FontWeight.w500,
-          color: Colors.black87,
-        ),
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: const TextStyle(color: Colors.black26, fontWeight: FontWeight.w600),
-          contentPadding: const EdgeInsets.all(20),
-          border: InputBorder.none,
+        child: const Center(
+          child: Text(
+            "SAVE REFLECTION",
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              fontSize: 16,
+              letterSpacing: 1,
+            ),
+          ),
         ),
       ),
     );
   }
-
-  static const Color bgSoft = Color(0xFFF7F8FA);
 }
