@@ -2,6 +2,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from models import UserMessage, ChatResponse, HealthResponse
 from ai_logic import analyze_sentiment, get_chatbot_response
 from database import save_user_mood, log_sound_recommendation
 from utils import setup_logger
@@ -21,10 +22,6 @@ app.add_middleware(
 # The URL of your teammate's Flask server
 MOOD_DB_URL = "http://127.0.0.1:5000/add_mood"
 
-class UserMessage(BaseModel):
-    text: str
-    user_id: str = "student_user_1"
-    session_id: str = "default_session"
 
 @app.get("/health")
 async def health_check():
