@@ -30,7 +30,9 @@ security = HTTPBearer()
 Base.metadata.create_all(bind=engine)
 
 # ---------- DB ----------
-def get_db():
+from typing import Generator
+
+def get_db() -> Generator:
     db = SessionLocal()
     try:
         yield db
