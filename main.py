@@ -82,7 +82,7 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
     return {"access_token": token, "token_type": "bearer"}
 
 # ---------- Protected Route ----------
-@app.get("/profile")
+@app.get("/health", response_model=HealthResponse)`nasync def health():`n    return HealthResponse(status="ok")`n`n@app.get("/profile")
 def profile(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: Session = Depends(get_db),
