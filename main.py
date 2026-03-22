@@ -5,8 +5,10 @@ from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 
 from db import SessionLocal, Base, engine
-from models import User
-from auth import hash_password, verify_password, create_token, decode_token
+from models import UserMessage, ChatResponse, HealthResponse
+from ai_logic import analyze_sentiment, get_chatbot_response
+from database import save_user_mood, log_sound_recommendation
+from auth import register_user, login_user, logout_user
 from utils import setup_logger
 
 logger = setup_logger(__name__)
