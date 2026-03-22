@@ -10,6 +10,11 @@ from auth import hash_password, verify_password, create_token, decode_token
 
 app = FastAPI()
 
+@app.get("/")
+def read_root():
+    return {"status": "ok", "message": "ZenWave API is running"}
+
+
 # ---------- CORS ----------
 app.add_middleware(
     CORSMiddleware,
