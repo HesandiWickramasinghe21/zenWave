@@ -36,3 +36,5 @@ class ZenwaveApp extends StatelessWidget {
     );
   }
 }
+
+// Minor update: refactor pass 1
