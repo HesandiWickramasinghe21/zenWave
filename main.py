@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -42,21 +42,21 @@ def get_db() -> Generator:
 # ---------- Request Models ----------
 class SignUpRequest(BaseModel):
     full_name: str | None = None
-    email: str
+    email: EmailStr
     phone: str | None = None
     gender: str | None = None
     birthday: str | None = None
     password: str
 
 class LoginRequest(BaseModel):
-    email: str
+    email: EmailStr
     password: str
 
 class ForgotPasswordRequest(BaseModel):
-    email: str
+    email: EmailStr
 
 class ResetPasswordRequest(BaseModel):
-    email: str
+    email: EmailStr
     new_password: str
 
 # ---------- Sign Up (Register new user) ----------
