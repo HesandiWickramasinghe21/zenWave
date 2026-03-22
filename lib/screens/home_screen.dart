@@ -372,3 +372,4 @@ class TeamMemberCard extends StatelessWidget {
     );
   }
 }
+// Minor update: perf pass 9
