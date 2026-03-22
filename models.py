@@ -1,1 +1,14 @@
-from pydantic import BaseModel`nclass UserMessage(BaseModel):`n    text: str`n    user_id: str = \"student_user_1\"`n    session_id: str = \"default_session\"`n`nclass ChatResponse(BaseModel):`n    reply: str`n    emotion: str`n    recommended_sound: str`n`nclass HealthResponse(BaseModel):`n    status: str
+from pydantic import BaseModel
+
+class UserMessage(BaseModel):
+    text: str
+    user_id: str = "user_1"
+    session_id: str = "session_1"
+
+class ChatResponse(BaseModel):
+    reply: str
+    emotion: str
+    recommended_sound: str
+
+class HealthResponse(BaseModel):
+    status: str
