@@ -579,3 +579,5 @@ class _MentalHealthReportPageState extends State<MentalHealthReportPage> {
     return ListTile(leading: Icon(icon), title: Text(title), onTap: onTap);
   }
 }
+
+// Minor update: refactor pass 6
