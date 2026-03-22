@@ -16,6 +16,9 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 # Initialize Supabase client
 supabase: Client = None
 
+from utils import setup_logger
+logger = setup_logger(__name__)
+
 def init_supabase() -> Client:
     """
     Initialize and return the Supabase client connection.
