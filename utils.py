@@ -1,1 +1,15 @@
-import logging`nfrom datetime import datetime`n`ndef setup_logger(name: str, level: int = logging.INFO) -> logging.Logger:`n    logger = logging.getLogger(name)`n    logger.setLevel(level)`n    if not logger.handlers:`n        handler = logging.StreamHandler()`n        formatter = logging.Formatter("[%(asctime)s] %(levelname)s - %(name)s - %(message)s")`n        handler.setFormatter(formatter)`n        logger.addHandler(handler)`n    return logger`n`ndef get_timestamp() -> str:`n    return datetime.utcnow().isoformat()
+import logging
+from datetime import datetime
+
+def setup_logger(name: str, level: int = logging.INFO) -> logging.Logger:
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    if not logger.handlers:
+        handler = logging.StreamHandler()
+        formatter = logging.Formatter("[%(asctime)s] %(levelname)s - %(name)s - %(message)s")
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+    return logger
+
+def get_timestamp() -> str:
+    return datetime.utcnow().isoformat()
