@@ -1,1 +1,1 @@
-We welcome contributions! Please follow the PEP 8 style guide.
+Please adhere to the coding standards for Python (PEP 8).
