@@ -1,110 +1,70 @@
-from flask import Flask, request, jsonify, render_template
-import ollama
+from flask import Flask, request, jsonify
 from flask_cors import CORS
-from supabase import create_client
-import uuid
+from pymongo import MongoClient
+from datetime import datetime
 
-# ------------------------------
-# Supabase Setup
-# ------------------------------
-SUPABASE_URL = "https://aarsjmnfmcjrrjwrvzvo.supabase.co" 
-SUPABASE_KEY = "sb_publishable_rKde5rs2TL49QvEoPjfSWQ_MsbPO6XG" 
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-
+# 1. Initialize the Flask App
 app = Flask(__name__)
-CORS(app)
+CORS(app)  # This allows your Flutter app to connect to this server
 
-@app.route("/")
+# 2. Database Connection
+# Note: Replace 'localhost' with the URI your teammate provides later
+try:
+    client = MongoClient("mongodb://localhost:27017/")
+    db = client['zenwave_db']
+    mood_collection = db['mood_history']
+    print("Connected to MongoDB successfully!")
+except Exception as e:
+    print(f"Database connection error: {e}")
+
+# 3. Home Route (To check if backend is alive)
+@app.route('/')
 def home():
-    return render_template("index.html")
+    return "ZenWave Mood Backend is Active!"
 
-@app.route("/chat", methods=["POST"])
-def chat():
-    data = request.json
-    user_message = data.get("message")
-    user_id = data.get("user_id")
-
-    if not user_id:
-        user_id = str(uuid.uuid4())
-
-    # 1. Save user message
-    supabase.table("messages").insert({
-        "user_id": user_id,
-        "role": "user",
-        "content": user_message
-    }).execute()
-
-    # 2. FETCH HISTORY
-    history_data = supabase.table("messages") \
-        .select("role", "content") \
-        .eq("user_id", user_id) \
-        .order("created_at", desc=True) \
-        .limit(10) \
-        .execute()
-
-    history = history_data.data[::-1]
-
-    # 3. UPDATED System Prompt
-    messages_for_ai = [
-        {
-            "role": "system", 
-            "content": (
-                "You are ZenWave, Umaya's friendly peer from Sri Lanka. "
-                "STRICT PROTOCOL: "
-                "1. If Umaya is just chatting, be casual and stay under 15 words. "
-                "2. If Umaya asks for help or breathing, say ONLY: 'I suggest the [Exercise Name] session below. 🌿' "
-                "3. Use Umaya's name often. "
-                "4. MANDATORY: You MUST end every single message with the word MOOD: followed by one category. "
-                "Example: 'I'm here for you, Umaya. MOOD: STRESSED'"
-            )
+# 4. Save Mood Route (The POST method for your project)
+@app.route('/add_mood', methods=['POST'])
+def add_mood():
+    try:
+        data = request.json
+        
+        # Structure the data for the database
+        new_entry = {
+            "user_id": data.get("user_id"),   # From Auth student
+            "mood_label": data.get("mood"),  # e.g., "Happy"
+            "mood_score": data.get("score"), # e.g., 5
+            "note": data.get("note", ""),    # Optional text
+            "timestamp": datetime.now()      # Automatic time
         }
-    ]
-    
-    for msg in history:
-        messages_for_ai.append({"role": msg["role"], "content": msg["content"]})
+        
+        result = mood_collection.insert_one(new_entry)
+        return jsonify({
+            "status": "success", 
+            "message": "Mood recorded!",
+            "id": str(result.inserted_id)
+        }), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
-    # 4. Get AI response
-    response = ollama.chat(model="llama2", messages=messages_for_ai)
-    full_reply = response['message']['content']
+# 5. Get History Route (The GET method for your charts)
+@app.route('/get_history/<user_id>', methods=['GET'])
+def get_history(user_id):
+    try:
+        # Find last 10 entries for a specific user
+        cursor = mood_collection.find({"user_id": user_id}).sort("timestamp", -1).limit(10)
+        
+        history = []
+        for entry in cursor:
+            history.append({
+                "mood": entry["mood_label"],
+                "score": entry["mood_score"],
+                "date": entry["timestamp"].strftime("%Y-%m-%d %H:%M")
+            })
+            
+        return jsonify(history), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-    # 5. Robust Emotion and BPM Logic
-    full_reply_upper = full_reply.upper()
-    
-    if "STRESSED" in full_reply_upper:
-        detected_emotion = "STRESSED"
-        bpm_val = 98
-    elif "ANXIOUS" in full_reply_upper:
-        detected_emotion = "ANXIOUS"
-        bpm_val = 105
-    elif "SAD" in full_reply_upper:
-        detected_emotion = "SAD"
-        bpm_val = 62
-    elif "JOY" in full_reply_upper:
-        detected_emotion = "JOY"
-        bpm_val = 68
-    elif "ANGRY" in full_reply_upper:
-        detected_emotion = "ANGRY"
-        bpm_val = 115
-    else:
-        detected_emotion = "NEUTRAL"
-        bpm_val = 72
-
-    # Clean the reply for the user
-    clean_reply = full_reply.split("MOOD:")[0].strip()
-
-    # 6. Save AI's response
-    supabase.table("messages").insert({
-        "user_id": user_id,
-        "role": "assistant",
-        "content": clean_reply
-    }).execute()
-
-    return jsonify({
-        "reply": clean_reply,
-        "user_id": user_id,
-        "emotion": detected_emotion,
-        "bpm": bpm_val
-    })
-
+# 6. Run the server
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(debug=True, port=5000)
