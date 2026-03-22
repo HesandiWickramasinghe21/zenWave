@@ -37,8 +37,11 @@ async def chat_endpoint(message: UserMessage):
     }
 
     sound = sound_library.get(emotion, sound_library["NEUTRAL"])
-    save_user_mood(message.user_id, emotion, message.text)
-    log_sound_recommendation(message.user_id, emotion, sound)
+    try:
+        save_user_mood(message.user_id, emotion, message.text)
+        log_sound_recommendation(message.user_id, emotion, sound)
+    except Exception as e:
+        print(f"Database error: {e}")
 
     # IMPORTANT: Your Flutter app must look for "recommended_sound" in the JSON
     return {
