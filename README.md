@@ -1,3 +1,3 @@
-ZenWave Backend - Mental Health AI Support
+# ZenWave AI Backend
 
-Built with FastAPI and Supabase.
+FastAPI backend for mental health support.
