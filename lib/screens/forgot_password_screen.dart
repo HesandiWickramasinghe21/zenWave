@@ -1,3 +1,4 @@
+// Forgot Password Screen - allows users to reset their password via email
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'reset_password_screen.dart';
