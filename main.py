@@ -26,6 +26,7 @@ class UserMessage(BaseModel):
 
 @app.post("/chat")
 async def chat_endpoint(message: UserMessage):
+    """Process a chat message, evaluate emotion, and return response."""
     emotion = analyze_sentiment(message.text)
     reply = get_chatbot_response(message.text, emotion)
     
