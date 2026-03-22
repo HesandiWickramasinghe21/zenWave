@@ -10,8 +10,9 @@ load_dotenv()
 
 # Supabase Configuration - Using environment variables for security
 # It is highly recommended to use environment variables for Supabase credentials.
-SUPABASE_URL = os.getenv("SUPABASE_URL", "https://aarsjmnfmcjrrjwrvzvo.supabase.co")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+from config import Config
+SUPABASE_URL = Config.SUPABASE_URL
+SUPABASE_KEY = Config.SUPABASE_KEY
 
 # Initialize Supabase client
 supabase: Client = None
