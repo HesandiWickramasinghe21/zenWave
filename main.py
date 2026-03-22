@@ -33,7 +33,7 @@ def get_db():
         db.close()
 
 # ---------- Request Models ----------
-class SignUpRequest(BaseModel):
+# Using models.py for request schemas`n`nclass SignUpRequest(BaseModel):
     full_name: str | None = None
     email: str
     phone: str | None = None
