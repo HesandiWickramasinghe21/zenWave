@@ -1,3 +1,4 @@
+"""Authentication utilities including JWT and password hashing."""
 from datetime import datetime, timedelta
 from jose import jwt, JWTError
 from passlib.context import CryptContext
