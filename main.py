@@ -6,6 +6,7 @@ from models import UserMessage, ChatResponse, HealthResponse
 from ai_logic import analyze_sentiment, get_chatbot_response
 from database import save_user_mood, log_sound_recommendation, get_user_mood_history, get_mood_statistics
 from utils import setup_logger
+from constants import SOUND_LIBRARY, DEFAULT_HOST, DEFAULT_PORT
 
 logger = setup_logger(__name__)
 
@@ -58,15 +59,7 @@ async def chat_endpoint(message: UserMessage):
     emotion = analyze_sentiment(message.text)
     reply = get_chatbot_response(message.text, emotion)
     
-    # Use real, accessible MP3 links for testing the player
-    sound_library = {
-        "JOY": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", 
-        "STRESSED": "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3", # Calming Nature
-        "CRISIS": "https://cdn.pixabay.com/download/audio/2021/11/25/audio_91b106e572.mp3", # Gentle Piano
-        "NEUTRAL": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"
-    }
-
-    sound = sound_library.get(emotion, sound_library["NEUTRAL"])
+    sound = SOUND_LIBRARY.get(emotion, SOUND_LIBRARY["NEUTRAL"])
     try:
         save_user_mood(message.user_id, emotion, message.text)
         log_sound_recommendation(message.user_id, emotion, sound)
@@ -83,4 +76,4 @@ async def chat_endpoint(message: UserMessage):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host=DEFAULT_HOST, port=DEFAULT_PORT)
