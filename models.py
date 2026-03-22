@@ -1,14 +1,14 @@
-from pydantic import BaseModel
-
-class UserMessage(BaseModel):
-    text: str
-    user_id: str = "user_1"
-    session_id: str = "session_1"
-
-class ChatResponse(BaseModel):
-    reply: str
-    emotion: str
-    recommended_sound: str
-
-class HealthResponse(BaseModel):
-    status: str
+\"\"\"ZenWave Schemas: Defines Pydantic Data Models for Validation.\"\"\"`nfrom pydantic import BaseModel
+\"\"\"ZenWave Schemas: Defines Pydantic Data Models for Validation.\"\"\"`n
+\"\"\"ZenWave Schemas: Defines Pydantic Data Models for Validation.\"\"\"`nclass UserMessage(BaseModel):
+\"\"\"ZenWave Schemas: Defines Pydantic Data Models for Validation.\"\"\"`n    text: str
+\"\"\"ZenWave Schemas: Defines Pydantic Data Models for Validation.\"\"\"`n    user_id: str = "user_1"
+\"\"\"ZenWave Schemas: Defines Pydantic Data Models for Validation.\"\"\"`n    session_id: str = "session_1"
+\"\"\"ZenWave Schemas: Defines Pydantic Data Models for Validation.\"\"\"`n
+\"\"\"ZenWave Schemas: Defines Pydantic Data Models for Validation.\"\"\"`nclass ChatResponse(BaseModel):
+\"\"\"ZenWave Schemas: Defines Pydantic Data Models for Validation.\"\"\"`n    reply: str
+\"\"\"ZenWave Schemas: Defines Pydantic Data Models for Validation.\"\"\"`n    emotion: str
+\"\"\"ZenWave Schemas: Defines Pydantic Data Models for Validation.\"\"\"`n    recommended_sound: str
+\"\"\"ZenWave Schemas: Defines Pydantic Data Models for Validation.\"\"\"`n
+\"\"\"ZenWave Schemas: Defines Pydantic Data Models for Validation.\"\"\"`nclass HealthResponse(BaseModel):
+\"\"\"ZenWave Schemas: Defines Pydantic Data Models for Validation.\"\"\"`n    status: str
