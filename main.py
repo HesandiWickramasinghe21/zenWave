@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import requests  
 from ai_logic import analyze_sentiment, get_chatbot_response
+from database import save_user_mood, log_sound_recommendation
 
 app = FastAPI()
 
@@ -35,11 +36,15 @@ async def chat_endpoint(message: UserMessage):
         "NEUTRAL": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"
     }
 
+    sound = sound_library.get(emotion, sound_library["NEUTRAL"])
+    save_user_mood(message.user_id, emotion, message.text)
+    log_sound_recommendation(message.user_id, emotion, sound)
+
     # IMPORTANT: Your Flutter app must look for "recommended_sound" in the JSON
     return {
         "reply": reply,
         "emotion": emotion,
-        "recommended_sound": sound_library.get(emotion, sound_library["NEUTRAL"])
+        "recommended_sound": sound
     }
 
 
