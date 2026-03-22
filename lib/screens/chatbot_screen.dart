@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'dart:async';
 
 class ChatbotScreen extends StatefulWidget {
   const ChatbotScreen({super.key});
@@ -8,542 +11,387 @@ class ChatbotScreen extends StatefulWidget {
 }
 
 class _ChatbotScreenState extends State<ChatbotScreen> {
-  double _audioValue = 0.7;
+  final TextEditingController _messageController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  bool _isExpanded = false;
+  List<Map<String, dynamic>> messages = [
+    {"text": "Hi! I'm your ZenWave guide. How are you feeling today?", "isSender": false},
+  ];
+
+  String _currentEmotion = "Neutral";
+  double _audioValue = 0.5;
+  bool _isLoading = false;
+  bool _isPlaying = false;
+  int _currentBPM = 72;
+
+  static const Color zenPurple = Color(0xFF9147FF);
+  static const Color borderLight = Color(0xFFE5E5E5);
+
+  Future<void> _sendMessage() async {
+    String text = _messageController.text.trim();
+    if (text.isEmpty) return;
+
+    setState(() {
+      messages.add({"text": text, "isSender": true});
+      _isLoading = true;
+      _isExpanded = true;
+    });
+    _messageController.clear();
+    _scrollToBottom();
+
+    try {
+      final response = await http.post(
+        Uri.parse('http://10.0.2.2:8000/chat'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'text': text}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          messages.add({"text": data['reply'], "isSender": false});
+          _currentEmotion = data['emotion'].toString();
+          _currentBPM = (_currentEmotion.toUpperCase() == "STRESSED") ? 108 : (_currentEmotion.toUpperCase() == "JOY" ? 85 : 72);
+        });
+        _scrollToBottom();
+      }
+    } catch (e) {
+      debugPrint("Error: $e");
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(_scrollController.position.maxScrollExtent, 
+            duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey,
-      backgroundColor: const Color(0xFFF3F4F6),
-
-      // RIGHT SIDE MENU
-      endDrawer: Drawer(
-        child: Column(
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF9147FF), Color(0xFFB388FF)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.spa_rounded, color: Colors.white, size: 40),
-                    SizedBox(height: 10),
-                    Text(
-                      "ZenWave",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            ListTile(
-              leading: const Icon(Icons.home_rounded),
-              title: const Text("Home"),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushReplacementNamed(context, "/home");
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.chat_bubble_rounded),
-              title: const Text("Chatbot"),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, "/chatbot");
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.book_rounded),
-              title: const Text("Journaling"),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, "/journaling");
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.insights_rounded),
-              title: const Text("Mood History"),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, "/mood");
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.person_rounded),
-              title: const Text("User Profile"),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, "/profile");
-              },
-            ),
-
-            const Spacer(),
-            const Divider(),
-
-            ListTile(
-              leading: const Icon(Icons.logout_rounded),
-              title: const Text("Logout"),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushReplacementNamed(context, "/login");
-              },
-            ),
-
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
-
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        // BACK ARROW FUNCTION
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        title: const Text(
-          "Chatbot",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-
-        actions: [
-          IconButton(
-            onPressed: () {
-              _scaffoldKey.currentState?.openEndDrawer();
-            },
-            icon: const Icon(Icons.menu),
-          ),
-        ],
-
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         elevation: 0,
+        centerTitle: true,
+        title: const Text("ZEN ASSISTANT", 
+          style: TextStyle(color: Colors.black45, fontWeight: FontWeight.w900, fontSize: 14, letterSpacing: 2)),
       ),
+      body: Column(
+        children: [
+          // CHAT AREA
+          Expanded(
+            flex: _isExpanded ? 10 : 5,
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF7F8FA),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: borderLight, width: 2),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(22),
+                child: ListView.builder(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.all(16),
+                  itemCount: messages.length,
+                  itemBuilder: (context, index) => _buildChatBubble(messages[index]),
+                ),
+              ),
+            ),
+          ),
 
-      // One page scroll
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // SECTION 1: CHAT
-            Padding(
-              padding: const EdgeInsets.only(top: 0),
+          // TOOLS AREA (Stats & Exercises)
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            height: _isExpanded ? 80 : 340,
+            child: SingleChildScrollView(
+              physics: const NeverScrollableScrollPhysics(),
               child: Column(
                 children: [
-                  ListView(
-                    padding: const EdgeInsets.all(16),
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    children: const [
-                      ChatBubble(
-                        message: "Hi Hesandi, How are you feeling today?",
-                        isSender: false,
-                      ),
-                      ChatBubble(
-                        message:
-                            "I've been feeling a bit overwhelmed with work lately.",
-                        isSender: true,
-                      ),
-                      ChatBubble(
-                        message:
-                            "I hear you. It's completely natural to feel that way.",
-                        isSender: false,
-                      ),
-                      SizedBox(height: 20),
-                      Center(
-                        child: Text(
-                          "↑ Scroll down for Status ↑",
-                          style: TextStyle(color: Colors.grey, fontSize: 12),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  // Input
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    child: TextField(
-                      decoration: InputDecoration(
-                        hintText: "Share your thoughts with ZenWave...",
-                        filled: true,
-                        fillColor: Colors.white,
-                        prefixIcon: const Icon(Icons.mic_none),
-                        suffixIcon: const Icon(
-                          Icons.send,
-                          color: Colors.deepPurple,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // Therapeutic Audio
-                  Container(
-                    margin: const EdgeInsets.all(16),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFC4BDBA),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Column(
-                      children: [
-                        const Row(
-                          children: [
-                            CircleAvatar(
-                              backgroundColor: Colors.white30,
-                              child: Icon(Icons.music_note),
-                            ),
-                            SizedBox(width: 12),
-                            Text(
-                              "Therapeutic Audio",
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            const Icon(Icons.play_arrow_rounded, size: 40),
-                            Expanded(
-                              child: Slider(
-                                value: _audioValue,
-                                activeColor: Colors.black87,
-                                onChanged: (val) =>
-                                    setState(() => _audioValue = val),
-                              ),
-                            ),
-                            Text("${(_audioValue * 100).toInt()}%"),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // SECTION 2: DASHBOARD
-            const SizedBox(height: 8),
-            const DashboardSection(),
-
-            // SECTION 3: HISTORY
-            const SizedBox(height: 8),
-            const SessionHistorySection(),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// DASHBOARD SECTION
-class DashboardSection extends StatelessWidget {
-  const DashboardSection({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white, // DashboardScreen had white background
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            _buildSectionCard(
-              title: "Current State",
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildStatusCapsule("MOOD\nNEUTRAL", Colors.grey[300]!),
-                  _buildStatusCapsule(
-                    "BPM\n80",
-                    Colors.grey[300]!,
-                    isItalic: true,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            _buildSectionCard(
-              title: "Guided Exercises",
-              hasToggle: true,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildExerciseSquare("Breathing", Icons.air),
-                  _buildExerciseSquare("Body Scan", Icons.accessibility_new),
-                  _buildExerciseSquare("Grounding", Icons.self_improvement),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            _buildSectionCard(
-              title: "Journal",
-              hasToggle: true,
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade200),
-                ),
-                child: Column(
-                  children: [
-                    const Icon(
-                      Icons.book_outlined,
-                      size: 40,
-                      color: Colors.grey,
-                    ),
-                    const Text(
-                      "No Journal Entries Yet",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const Text(
-                      "Start writing to track your journey",
-                      style: TextStyle(color: Colors.grey, fontSize: 12),
-                    ),
-                    const SizedBox(height: 10),
-                    ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey[300],
-                      ),
-                      child: const Text(
-                        "New Entry",
-                        style: TextStyle(color: Colors.black),
-                      ),
-                    ),
+                  _buildInputArea(),
+                  if (!_isExpanded) ...[
+                    const SizedBox(height: 8),
+                    _buildCurrentState(),
+                    _buildBreathingExerciseCard(),
                   ],
-                ),
+                ],
               ),
             ),
-            const SizedBox(height: 20),
-            const Center(
-              child: Text(
-                "Scroll down for History",
-                style: TextStyle(color: Colors.grey, fontSize: 12),
-              ),
-            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChatBubble(Map msg) {
+    bool isMe = msg['isSender'];
+    return Align(
+      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+        decoration: BoxDecoration(
+          color: isMe ? zenPurple : Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(18),
+            topRight: const Radius.circular(18),
+            bottomLeft: Radius.circular(isMe ? 18 : 4),
+            bottomRight: Radius.circular(isMe ? 4 : 18),
+          ),
+          border: Border.all(color: isMe ? zenPurple : borderLight, width: 2),
+          boxShadow: [
+            BoxShadow(color: isMe ? const Color(0xFF7030D8) : borderLight, offset: const Offset(0, 3))
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildSectionCard({
-    required String title,
-    required Widget child,
-    bool hasToggle = false,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.grey[400],
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  title,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-              if (hasToggle)
-                const CircleAvatar(radius: 12, backgroundColor: Colors.white),
-            ],
+        child: Text(
+          msg['text'],
+          style: TextStyle(
+            fontSize: 15, 
+            fontWeight: FontWeight.w700,
+            color: isMe ? Colors.white : Colors.black87
           ),
-          const SizedBox(height: 16),
-          child,
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatusCapsule(
-    String text,
-    Color color, {
-    bool isItalic = false,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          fontStyle: isItalic ? FontStyle.italic : FontStyle.normal,
         ),
       ),
     );
   }
 
-  Widget _buildExerciseSquare(String label, IconData icon) {
+  Widget _buildInputArea() {
     return Container(
-      width: 85,
-      height: 90,
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
-        color: Colors.grey[500],
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: borderLight, width: 2),
+        boxShadow: const [BoxShadow(color: borderLight, offset: Offset(0, 4))],
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Row(
         children: [
-          Icon(icon, color: Colors.white),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: const TextStyle(color: Colors.white, fontSize: 11),
+          IconButton(
+            icon: Icon(_isExpanded ? Icons.keyboard_arrow_down_rounded : Icons.bolt_rounded, color: Colors.orange),
+            onPressed: () => setState(() => _isExpanded = !_isExpanded),
+          ),
+          Expanded(
+            child: TextField(
+              controller: _messageController,
+              onTap: () => setState(() => _isExpanded = true),
+              decoration: const InputDecoration(hintText: "Type a message...", border: InputBorder.none),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.send_rounded, color: zenPurple),
+            onPressed: _sendMessage,
           ),
         ],
       ),
     );
   }
-}
 
-// HISTORY SECTION
-class SessionHistorySection extends StatelessWidget {
-  const SessionHistorySection({super.key});
+  Widget _buildCurrentState() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          Expanded(child: _buildDuoStateBox("MOOD", _currentEmotion.toUpperCase(), const Color(0xFFF3E5F5), zenPurple)),
+          const SizedBox(width: 12),
+          Expanded(child: _buildDuoStateBox("HEART", "$_currentBPM BPM", const Color(0xFFE8F5E9), Colors.green)),
+        ],
+      ),
+    );
+  }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildDuoStateBox(String label, String value, Color bg, Color textCol) {
     return Container(
-      color: Colors.white, // History screen had white background
-      child: Padding(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: textCol.withOpacity(0.2), width: 2),
+        boxShadow: [BoxShadow(color: textCol.withOpacity(0.1), offset: const Offset(0, 4))],
+      ),
+      child: Column(
+        children: [
+          Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: textCol.withOpacity(0.5))),
+          Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: textCol)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBreathingExerciseCard() {
+    return GestureDetector(
+      onTap: () => _showExerciseMenu(context),
+      child: Container(
+        margin: const EdgeInsets.all(16),
         padding: const EdgeInsets.all(16),
-        child: Column(
+        decoration: BoxDecoration(
+          color: const Color(0xFFE3F2FD),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.blue.withOpacity(0.3), width: 2),
+          boxShadow: const [BoxShadow(color: Color(0xFFBBDEFB), offset: Offset(0, 4))],
+        ),
+        child: const Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(12),
-              ),
+            CircleAvatar(backgroundColor: Colors.white, child: Icon(Icons.air_rounded, color: Colors.blue)),
+            SizedBox(width: 16),
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[400],
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Text(
-                      "Session History",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 40),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Column(
-                      children: [
-                        Icon(
-                          Icons.music_note_outlined,
-                          size: 40,
-                          color: Colors.blueGrey,
-                        ),
-                        SizedBox(height: 10),
-                        Text(
-                          "Started playing to track..",
-                          style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  Text("BREATHING SESSION", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: Colors.blue)),
+                  Text("Start a 2-minute relaxation", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.blueGrey)),
                 ],
               ),
             ),
-            const SizedBox(height: 40),
-            const Center(
-              child: Text(
-                "Project ZenWave by Team DEVSQUAD",
-                style: TextStyle(fontSize: 10, color: Colors.grey),
-              ),
-            ),
+            Icon(Icons.play_circle_fill_rounded, color: Colors.blue, size: 32),
           ],
         ),
       ),
     );
   }
+
+  void _showExerciseMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(30))),
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(width: 40, height: 4, decoration: BoxDecoration(color: borderLight, borderRadius: BorderRadius.circular(10))),
+            const SizedBox(height: 20),
+            const Text("QUICK RELIEF", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: 1)),
+            const SizedBox(height: 20),
+            _menuItem(context, "Box Breathing", "Stabilize & Focus", Colors.teal),
+            _menuItem(context, "4-7-8 Technique", "Calm Anxiety", Colors.deepPurple),
+            _menuItem(context, "Coherent Breathing", "Heart Sync", Colors.blue),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _menuItem(BuildContext context, String title, String sub, Color col) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: borderLight, width: 2),
+      ),
+      child: ListTile(
+        leading: Icon(Icons.spa_rounded, color: col),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
+        subtitle: Text(sub, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+        onTap: () {
+          Navigator.pop(context);
+          Navigator.push(context, MaterialPageRoute(builder: (context) => BreathingSessionScreen(exerciseType: title)));
+        },
+      ),
+    );
+  }
 }
 
-// COMMON WIDGET:
-class ChatBubble extends StatelessWidget {
-  final String message;
-  final bool isSender;
+// --- UPGRADED BREATHING SESSION ---
+class BreathingSessionScreen extends StatefulWidget {
+  final String exerciseType;
+  const BreathingSessionScreen({super.key, required this.exerciseType});
 
-  const ChatBubble({super.key, required this.message, required this.isSender});
+  @override
+  State<BreathingSessionScreen> createState() => _BreathingSessionScreenState();
+}
+
+class _BreathingSessionScreenState extends State<BreathingSessionScreen> {
+  String _label = "GET READY";
+  double _scale = 1.0;
+  Color _mainColor = Colors.blue;
+  bool _isRunning = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _runCycle();
+  }
+
+  @override
+  void dispose() { _isRunning = false; super.dispose(); }
+
+  void _runCycle() async {
+    while (_isRunning) {
+      if (!mounted) break;
+      _mainColor = (widget.exerciseType == "Box Breathing") ? Colors.teal : (widget.exerciseType == "4-7-8 Technique" ? Colors.deepPurple : Colors.blue);
+      
+      await _phase("INHALE", 1.8, 4); if (!_isRunning) break;
+      if (widget.exerciseType != "Coherent Breathing") await _phase("HOLD", 1.8, 4); if (!_isRunning) break;
+      await _phase("EXHALE", 1.0, 5); if (!_isRunning) break;
+      await _phase("REST", 1.0, 2);
+    }
+  }
+
+  Future<void> _phase(String label, double scale, int seconds) async {
+    if (!mounted) return;
+    setState(() { _label = label; _scale = scale; });
+    await Future.delayed(Duration(seconds: seconds));
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Align(
-      alignment: isSender ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 5),
-        padding: const EdgeInsets.all(14),
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.7,
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(widget.exerciseType.toUpperCase(), 
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: _mainColor, letterSpacing: 2)),
+            const SizedBox(height: 100),
+            
+            // THE BREATHING CIRCLE
+            TweenAnimationBuilder(
+              duration: const Duration(seconds: 4),
+              tween: Tween<double>(begin: 1.0, end: _scale),
+              builder: (context, double val, child) {
+                return Container(
+                  width: 200 * val,
+                  height: 200 * val,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _mainColor.withOpacity(0.1),
+                    border: Border.all(color: _mainColor, width: 6),
+                    boxShadow: [BoxShadow(color: _mainColor.withOpacity(0.2), blurRadius: 40, spreadRadius: 10 * val)],
+                  ),
+                  child: Center(
+                    child: Text(_label, style: TextStyle(fontWeight: FontWeight.w900, fontSize: 22, color: _mainColor)),
+                  ),
+                );
+              },
+            ),
+            
+            const SizedBox(height: 150),
+            GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: _mainColor, width: 2),
+                  boxShadow: [BoxShadow(color: _mainColor.withOpacity(0.2), offset: const Offset(0, 4))],
+                ),
+                child: Text("FINISHED", style: TextStyle(fontWeight: FontWeight.w900, color: _mainColor)),
+              ),
+            ),
+          ],
         ),
-        decoration: BoxDecoration(
-          color: isSender ? const Color(0xFFE8DEF8) : Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(15),
-            topRight: const Radius.circular(15),
-            bottomLeft: Radius.circular(isSender ? 15 : 0),
-            bottomRight: Radius.circular(isSender ? 0 : 15),
-          ),
-        ),
-        child: Text(message),
       ),
     );
   }

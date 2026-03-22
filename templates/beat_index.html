@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Deep Mood Beat Player</title>
+    <style>
+      body {
+        font-family: Arial;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 100px;
+      }
+      .mood-box {
+        margin-bottom: 30px;
+        text-align: center;
+        font-size: 1.5em;
+      }
+      button {
+        padding: 15px 30px;
+        font-size: 1.2em;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="mood-box">
+      <div>Latest Mood: <span id="mood">-</span></div>
+      <div>Sentiment Score: <span id="sentiment">-</span></div>
+    </div>
+    <button onclick="playMoodBeat()">Play Mood Beat</button>
+
+    <script>
+      let latestBeat = null;
+
+      async function fetchLatestBeat() {
+        try {
+          const res = await fetch("/latest-beats");
+          const data = await res.json();
+          if (data.length > 0) {
+            latestBeat = data[0];
+            document.getElementById("mood").textContent = latestBeat.mood;
+            document.getElementById("sentiment").textContent =
+              latestBeat.sentiment.toFixed(2);
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      setInterval(fetchLatestBeat, 2000);
+      fetchLatestBeat();
+
+      function playMoodBeat() {
+        if (!latestBeat) return alert("No mood data available yet!");
+        const frequencies = latestBeat.frequency_sequence || [300];
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        let time = ctx.currentTime;
+        frequencies.forEach((freq) => {
+          const osc = ctx.createOscillator();
+          osc.type = "sine";
+          osc.frequency.setValueAtTime(freq, time);
+          osc.connect(ctx.destination);
+          osc.start(time);
+          osc.stop(time + 0.6);
+          time += 0.6;
+        });
+      }
+    </script>
+  </body>
+</html>
