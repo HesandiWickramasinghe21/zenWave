@@ -1,6 +1,6 @@
-# zenwaveproject
+# ZenWave AI Backend
 
-A new Flutter project.
+A new Flutter project for the ZenWave frontend, along with a FastAPI backend for mental health support.
 
 ## Getting Started
 
