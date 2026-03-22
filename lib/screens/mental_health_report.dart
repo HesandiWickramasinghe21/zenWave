@@ -74,9 +74,7 @@ class _MentalHealthReportPageState extends State<MentalHealthReportPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey,
       backgroundColor: background,
-      endDrawer: _buildZenDrawer(),
       body: SafeArea(
         child: _loading
             ? const Center(child: CircularProgressIndicator(color: zenPurple))
@@ -130,22 +128,21 @@ class _MentalHealthReportPageState extends State<MentalHealthReportPage> {
     );
   }
 
-  Widget _buildHeader() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        GestureDetector(
-          onTap: () => Navigator.pop(context),
-          child: _iconButton(Icons.arrow_back_ios_new_rounded),
-        ),
-        const Text("Health Report", style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: textDark)),
-        GestureDetector(
-          onTap: () => _scaffoldKey.currentState?.openEndDrawer(),
-          child: _iconButton(Icons.menu_rounded),
-        ),
-      ],
-    );
-  }
+Widget _buildHeader() {
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      GestureDetector(
+        onTap: () => Navigator.pop(context),
+        child: _iconButton(Icons.arrow_back_ios_new_rounded),
+      ),
+      const Text("Health Report", style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: textDark)),
+      
+      // REMOVE THE GESTURE DETECTOR BELOW
+      const SizedBox(width: 42), // Use a SizedBox to keep the title centered
+    ],
+  );
+}
 
   Widget _iconButton(IconData icon) {
     return Container(
