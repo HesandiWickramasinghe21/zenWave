@@ -1,581 +1,211 @@
 import 'package:flutter/material.dart';
-import '../services/api_service.dart';
 
-class JournalingScreen extends StatelessWidget {
+class JournalingScreen extends StatefulWidget {
   const JournalingScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return const MentalHealthReportPage();
-  }
+  State<JournalingScreen> createState() => _JournalingScreenState();
 }
 
-class MentalHealthReportPage extends StatefulWidget {
-  const MentalHealthReportPage({super.key});
+class _JournalingScreenState extends State<JournalingScreen> {
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _contentController = TextEditingController();
+  int _wordCount = 0;
+  String _selectedEmoji = "😊";
+
+  // Palette
+  static const Color zenPurple = Color(0xFF9147FF);
+  static const Color borderLight = Color(0xFFE5E5E5);
 
   @override
-  State<MentalHealthReportPage> createState() => _MentalHealthReportPageState();
-}
-
-class _MentalHealthReportPageState extends State<MentalHealthReportPage> {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
-  String activeTab = 'Overview';
-
-  final List<Map<String, String>> moodData = [
-    {'label': 'CALM', 'value': '45%'},
-    {'label': 'JOY', 'value': '50%'},
-    {'label': 'STRESS', 'value': '25%'},
-    {'label': 'ANXIETY', 'value': '20%'},
-    {'label': 'SADNESS', 'value': '15%'},
-    {'label': 'ANGER', 'value': '10%'},
-  ];
+  void initState() {
+    super.initState();
+    _contentController.addListener(() {
+      final text = _contentController.text.trim();
+      setState(() {
+        _wordCount = text.isEmpty ? 0 : text.split(RegExp(r'\s+')).length;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey,
       backgroundColor: Colors.white,
-
-      // RIGHT SIDE DRAWER
-      endDrawer: Drawer(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        title: Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.close_rounded, color: Colors.black45, size: 30),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: const LinearProgressIndicator(
+                  value: 0.4, // Visual "progress" through the journal entry
+                  backgroundColor: borderLight,
+                  valueColor: AlwaysStoppedAnimation<Color>(zenPurple),
+                  minHeight: 12,
+                ),
+              ),
+            ),
+            const SizedBox(width: 15),
+            const Icon(Icons.favorite, color: Colors.redAccent),
+          ],
+        ),
+      ),
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF9147FF), Color(0xFFB388FF)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.spa_rounded, color: Colors.white, size: 40),
-                    SizedBox(height: 10),
-                    Text(
-                      "ZenWave",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+            const Text(
+              "How are you feeling?",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+            ),
+            const SizedBox(height: 15),
+            
+            // MOOD SELECTOR (Duo attraction feature)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: ["😊", "😔", "😤", "😴", "🧠"].map((emoji) {
+                bool isSelected = _selectedEmoji == emoji;
+                return GestureDetector(
+                  onTap: () => setState(() => _selectedEmoji = emoji),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: isSelected ? zenPurple.withOpacity(0.1) : Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: isSelected ? zenPurple : borderLight,
+                        width: 2,
                       ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: isSelected ? zenPurple.withOpacity(0.2) : borderLight,
+                          offset: const Offset(0, 4),
+                        )
+                      ],
                     ),
+                    child: Text(emoji, style: const TextStyle(fontSize: 24)),
+                  ),
+                );
+              }).toList(),
+            ),
+            
+            const SizedBox(height: 30),
+
+            // TITLE INPUT
+            _buildDuoInput(
+              controller: _titleController,
+              hint: "Title of your story...",
+              isTitle: true,
+            ),
+            
+            const SizedBox(height: 16),
+
+            // CONTENT INPUT
+            Stack(
+              alignment: Alignment.bottomRight,
+              children: [
+                _buildDuoInput(
+                  controller: _contentController,
+                  hint: "Write your heart out...",
+                  isTitle: false,
+                  maxLines: 10,
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: bgSoft,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: borderLight),
+                    ),
+                    child: Text(
+                      "$_wordCount words",
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black38),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            
+            const SizedBox(height: 40),
+
+            // SAVE BUTTON (The "Duo" Green Button)
+            GestureDetector(
+              onTap: () {
+                // Success logic here
+              },
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 18),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF58CC02), // Duolingo Green
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: const [
+                    BoxShadow(color: Color(0xFF46A302), offset: Offset(0, 5)), // Darker green bottom
                   ],
+                ),
+                child: const Center(
+                  child: Text(
+                    "SAVE ENTRY",
+                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18, letterSpacing: 1.2),
+                  ),
                 ),
               ),
             ),
-
-            _buildDrawerItem(
-              Icons.home_rounded,
-              "Home",
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushReplacementNamed(context, "/home");
-              },
-            ),
-
-            _buildDrawerItem(
-              Icons.chat_bubble_rounded,
-              "Chatbot",
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, "/chatbot");
-              },
-            ),
-
-            _buildDrawerItem(
-              Icons.book_rounded,
-              "Journaling",
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, "/journaling");
-              },
-            ),
-
-            _buildDrawerItem(
-              Icons.insights_rounded,
-              "Mood History",
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, "/mood");
-              },
-            ),
-
-            _buildDrawerItem(
-              Icons.person_rounded,
-              "User Profile",
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(context, "/profile");
-              },
-            ),
-
-            const Spacer(),
-            const Divider(),
-
-            _buildDrawerItem(
-              Icons.logout_rounded,
-              "Logout",
-              onTap: () async {
-                Navigator.pop(context);
-                try {
-                  await ApiService.logout();
-                } catch (_) {}
-                if (context.mounted) {
-                  Navigator.pushReplacementNamed(context, "/login");
-                }
-              },
-            ),
-
+            
             const SizedBox(height: 20),
+            Center(
+              child: TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("CAN'T WRITE NOW", style: TextStyle(color: Colors.black26, fontWeight: FontWeight.w900)),
+              ),
+            )
           ],
         ),
       ),
-
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      Navigator.pop(context); // back page
-                    },
-                    icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-
-                  const SizedBox(width: 12),
-
-                  const Text(
-                    "Mental Health Report",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF2D3142),
-                    ),
-                  ),
-
-                  const Spacer(),
-
-                  IconButton(
-                    onPressed: () {
-                      _scaffoldKey.currentState
-                          ?.openEndDrawer(); // right drawer open
-                    },
-                    icon: const Icon(Icons.menu, size: 22),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 20),
-
-              const Text(
-                'ZenWave Wellness',
-                style: TextStyle(fontSize: 14, color: Colors.grey),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                'Session Analysis & Insights',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF2D3142),
-                  height: 1.2,
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // --- Tabs ---
-              Container(
-                height: 50,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEEEEEE),
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                child: Row(
-                  children: [
-                    _buildTabItem('Overview'),
-                    _buildTabItem('Detailed'),
-                    _buildTabItem('Timeline'),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              if (activeTab == 'Overview') _buildOverviewSection(),
-              if (activeTab == 'Detailed') _buildDetailedSection(),
-              if (activeTab == 'Timeline') _buildTimelineSection(),
-            ],
-          ),
-        ),
-      ),
     );
   }
 
-  Widget _buildTabItem(String tabName) {
-    final bool isActive = activeTab == tabName;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          setState(() {
-            activeTab = tabName;
-          });
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          margin: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: isActive ? const Color(0xFF9DC4F8) : Colors.transparent,
-            borderRadius: BorderRadius.circular(25),
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            tabName,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: isActive ? Colors.white : Colors.grey[600],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOverviewSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFFDFA6E3), Color(0xFFC393D9)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.purple.withOpacity(0.2),
-                blurRadius: 10,
-                offset: const Offset(0, 5),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              const Text(
-                'OVERALL MENTAL HEALTH STATUS',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.0,
-                  color: Colors.white70,
-                ),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'EXCELLENT',
-                style: TextStyle(
-                  fontSize: 40,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white,
-                  letterSpacing: 1,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(child: _buildInnerStatBox('TOTAL MESSAGES', '0')),
-                  const SizedBox(width: 16),
-                  Expanded(child: _buildInnerStatBox('SESSION TIME', '0 min')),
-                ],
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 20),
-
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
-          decoration: BoxDecoration(
-            color: const Color(0xFF8CD2B6),
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'DOMINANT MOOD',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
-                      color: Colors.white70,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-                  const Text(
-                    'CALM',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.cloud, color: Colors.white, size: 32),
-              ),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: 24),
-        const Text(
-          "Today's Quick Insights",
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF2D3142),
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        Row(
-          children: [
-            Expanded(
-              child: _buildInsightCard(
-                Icons.bolt,
-                'STRESS LEVEL',
-                'Very Low',
-                Colors.blue,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: _buildInsightCard(
-                Icons.nightlight_round,
-                'SLEEP QUALITY',
-                'Optimal',
-                Colors.purple,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 30),
-      ],
-    );
-  }
-
-  Widget _buildInnerStatBox(String label, String value) {
+  Widget _buildDuoInput({
+    required TextEditingController controller,
+    required String hint,
+    required bool isTitle,
+    int? maxLines = 1,
+  }) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFFF7F8FA),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: borderLight, width: 2),
       ),
-      child: Column(
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 9,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInsightCard(
-    IconData icon,
-    String label,
-    String value,
-    Color iconColor,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, size: 16, color: iconColor),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDetailedSection() {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        childAspectRatio: 1.1,
-      ),
-      itemCount: moodData.length,
-      itemBuilder: (context, index) {
-        final item = moodData[index];
-        final moodLabel = item['label']!;
-        final bgColor = _getMoodBackgroundColor(moodLabel);
-        final textColor = _getMoodTextColor(moodLabel);
-
-        return Container(
-          decoration: BoxDecoration(
-            color: bgColor,
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                moodLabel,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: textColor.withOpacity(0.7),
-                  letterSpacing: 1,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                item['value']!,
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildTimelineSection() {
-    return Center(
-      child: Container(
-        padding: const EdgeInsets.all(40),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+      child: TextField(
+        controller: controller,
+        maxLines: maxLines,
+        style: TextStyle(
+          fontSize: isTitle ? 20 : 16,
+          fontWeight: isTitle ? FontWeight.w800 : FontWeight.w500,
+          color: Colors.black87,
         ),
-        child: const Text(
-          "Timeline Data Unavailable",
-          style: TextStyle(color: Colors.grey),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: const TextStyle(color: Colors.black26, fontWeight: FontWeight.w600),
+          contentPadding: const EdgeInsets.all(20),
+          border: InputBorder.none,
         ),
       ),
     );
   }
 
-  Color _getMoodBackgroundColor(String mood) {
-    switch (mood) {
-      case 'CALM':
-        return const Color(0xFFE0F2F1);
-      case 'JOY':
-        return const Color(0xFFFFF3E0);
-      case 'STRESS':
-        return const Color(0xFFFFEBEE);
-      case 'ANXIETY':
-        return const Color(0xFFF3E5F5);
-      case 'SADNESS':
-        return const Color(0xFFE3F2FD);
-      case 'ANGER':
-        return const Color(0xFFFBE9E7);
-      default:
-        return const Color(0xFFF5F5F5);
-    }
-  }
-
-  Color _getMoodTextColor(String mood) {
-    switch (mood) {
-      case 'CALM':
-        return const Color(0xFF00695C);
-      case 'JOY':
-        return const Color(0xFFEF6C00);
-      case 'STRESS':
-        return const Color(0xFFC62828);
-      case 'ANXIETY':
-        return const Color(0xFF6A1B9A);
-      case 'SADNESS':
-        return const Color(0xFF1565C0);
-      case 'ANGER':
-        return const Color(0xFFD84315);
-      default:
-        return Colors.black87;
-    }
-  }
-
-  Widget _buildDrawerItem(IconData icon, String title, {VoidCallback? onTap}) {
-    return ListTile(leading: Icon(icon), title: Text(title), onTap: onTap);
-  }
+  static const Color bgSoft = Color(0xFFF7F8FA);
 }
