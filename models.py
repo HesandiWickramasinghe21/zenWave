@@ -1,5 +1,6 @@
 """SQLAlchemy models representing database tables."""
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, DateTime
+import datetime
 from db import Base
 
 class User(Base):
@@ -14,3 +15,4 @@ class User(Base):
     phone = Column(String, nullable=True)
     gender = Column(String, nullable=True)
     birthday = Column(String, nullable=True)  # "YYYY-MM-DD"
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
