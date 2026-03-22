@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from jose import jwt, JWTError
-from passlib.context import CryptContext
+from passlib.context import CryptContext`nfrom utils import setup_logger`n`nlogger = setup_logger(__name__)
 
 SECRET_KEY = "mysecret123"
 ALGORITHM = "HS256"
