@@ -131,3 +131,4 @@ class ApiService {
     await prefs.remove("token");
   }
 }
+// Minor update: docs pass 3
