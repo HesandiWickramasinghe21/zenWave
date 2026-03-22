@@ -59,23 +59,9 @@ class ResetPasswordRequest(BaseModel):
     new_password: str
 
 # ---------- Sign Up (Register new user) ----------
-@app.post("/signin")
-def signin(payload: SignUpRequest, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == payload.email).first()
-    if user:
-        raise HTTPException(status_code=400, detail="User already exists")
-
-    new_user = User(
-        email=payload.email,
-        password=hash_password(payload.password),
-        full_name=payload.full_name,
-        phone=payload.phone,
-        gender=payload.gender,
-        birthday=payload.birthday,
-    )
-    db.add(new_user)
-    db.commit()
-    return {"message": "Account created successfully"}
+@app.post("/register")
+def register(payload: SignUpRequest):
+    return register_user(payload.email, payload.password)
 
 # ---------- Login ----------
 @app.post("/login")
