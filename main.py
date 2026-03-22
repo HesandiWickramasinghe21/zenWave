@@ -4,6 +4,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from ai_logic import analyze_sentiment, get_chatbot_response
 from database import save_user_mood, log_sound_recommendation
+from utils import setup_logger
+
+logger = setup_logger(__name__)
 
 app = FastAPI()
 
@@ -46,7 +49,7 @@ async def chat_endpoint(message: UserMessage):
         save_user_mood(message.user_id, emotion, message.text)
         log_sound_recommendation(message.user_id, emotion, sound)
     except Exception as e:
-        print(f"Database error: {e}")
+        logger.error(f"Database error: {e}")
 
     # IMPORTANT: Your Flutter app must look for "recommended_sound" in the JSON
     return {
