@@ -20,8 +20,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# The URL of your teammate's Flask server
-MOOD_DB_URL = "http://127.0.0.1:5000/add_mood"
 
 from auth import register_user, login_user, logout_user
 
