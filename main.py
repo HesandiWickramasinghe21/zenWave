@@ -8,7 +8,8 @@ from db import SessionLocal, Base, engine
 from models import UserMessage, ChatResponse, HealthResponse
 from ai_logic import analyze_sentiment, get_chatbot_response
 from database import save_user_mood, log_sound_recommendation
-from auth import register_user, login_user, logout_user`nfrom constants import SOUND_LIBRARY, DEFAULT_HOST, DEFAULT_PORT
+from auth import register_user, login_user, logout_user, hash_password, verify_password, create_token, decode_token, User
+from constants import SOUND_LIBRARY, DEFAULT_HOST, DEFAULT_PORT
 from utils import setup_logger
 
 logger = setup_logger(__name__)
