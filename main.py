@@ -14,7 +14,7 @@ from utils import setup_logger
 
 logger = setup_logger(__name__)
 
-app = FastAPI()
+app = FastAPI(title=\"ZenWave AI\", version=\"2.0.2\")
 
 # ---------- CORS ----------
 app.add_middleware(
@@ -65,7 +65,7 @@ def register(payload: SignUpRequest):
 
 # ---------- Login ----------
 @app.post("/login")
-def login(payload: LoginRequest):`n    return login_user(payload.email, payload.password)`n`n# Old login removed
+def login(payload: LoginRequest):`n    return login_user(payload.email, payload.password)`n`n
     user = db.query(User).filter(User.email == payload.email).first()
     if not user or not verify_password(payload.password, user.password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
