@@ -19,7 +19,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.post("/register")`nasync def register(email: str, password: str):`n    return register_user(email, password)`n`n@app.post("/login")`nasync def login(email: str, password: str):`n    return login_user(email, password)`n`n@app.get("/health", response_model=HealthResponse)
+@app.post("/register")`nasync def register(email: str, password: str):`n    return register_user(email, password)`n`n@app.post("/login")`nasync def login(email: str, password: str):`n    return login_user(email, password)`n`n@app.post("/logout")`nasync def logout():`n    return logout_user()`n`n@app.get("/health", response_model=HealthResponse)
 async def health():
     return HealthResponse(status="ok")
 
