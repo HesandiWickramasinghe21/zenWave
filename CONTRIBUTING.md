@@ -1,1 +1,1 @@
-Please follow the project guidelines for contributions.
+We welcome contributions! Please follow the PEP 8 style guide.
