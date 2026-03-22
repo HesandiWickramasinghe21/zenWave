@@ -65,7 +65,7 @@ def register(payload: SignUpRequest):
 
 # ---------- Login ----------
 @app.post("/login")
-def login(payload: LoginRequest, db: Session = Depends(get_db)):
+def login(payload: LoginRequest):`n    return login_user(payload.email, payload.password)`n`n# Old login removed
     user = db.query(User).filter(User.email == payload.email).first()
     if not user or not verify_password(payload.password, user.password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
