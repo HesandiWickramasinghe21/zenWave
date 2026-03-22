@@ -22,10 +22,26 @@ app.add_middleware(
 # The URL of your teammate's Flask server
 MOOD_DB_URL = "http://127.0.0.1:5000/add_mood"
 
+from auth import register_user, login_user, logout_user
 
 @app.get("/health")
 async def health_check():
     return {"status": "ok"}
+
+@app.post("/register")
+async def register_endpoint(email: str, password: str):
+    """Register a new user account."""
+    return register_user(email, password)
+
+@app.post("/login")
+async def login_endpoint(email: str, password: str):
+    """Login an existing user."""
+    return login_user(email, password)
+
+@app.post("/logout")
+async def logout_endpoint():
+    """Logout the current user."""
+    return logout_user()
 
 @app.post("/chat")
 async def chat_endpoint(message: UserMessage):
