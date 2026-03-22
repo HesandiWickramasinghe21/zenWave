@@ -60,7 +60,7 @@ class ResetPasswordRequest(BaseModel):
     new_password: str
 
 # ---------- Sign Up (Register new user) ----------
-@app.post("/signup", tags=["Authentication"])
+@app.post("/signup", tags=["Authentication"], status_code=201)
 def signin(payload: SignUpRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == payload.email).first()
     if user:
