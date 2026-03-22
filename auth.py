@@ -1,6 +1,13 @@
 from datetime import datetime, timedelta
 from jose import jwt, JWTError
 from passlib.context import CryptContext
+import os
+from supabase import create_client, Client
+from utils import setup_logger
+
+logger = setup_logger(__name__)
+
+# Supabase Configuration - Ensure that Supabase credentials are kept securely in the environment.
 
 SECRET_KEY = "mysecret123"
 ALGORITHM = "HS256"
