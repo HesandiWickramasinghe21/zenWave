@@ -9,7 +9,7 @@
 \"\"\"ZenWave Main API Gateway: Handles routing and application logic.\"\"\"`n
 \"\"\"ZenWave Main API Gateway: Handles routing and application logic.\"\"\"`nlogger = setup_logger(__name__)
 \"\"\"ZenWave Main API Gateway: Handles routing and application logic.\"\"\"`n
-\"\"\"ZenWave Main API Gateway: Handles routing and application logic.\"\"\"`napp = FastAPI(title="ZenWave AI", version="1.0.1")
+\"\"\"ZenWave Main API Gateway: Handles routing and application logic.\"\"\"`napp = FastAPI(title="ZenWave AI", version=\"1.0.2\")
 \"\"\"ZenWave Main API Gateway: Handles routing and application logic.\"\"\"`n
 \"\"\"ZenWave Main API Gateway: Handles routing and application logic.\"\"\"`napp.add_middleware(
 \"\"\"ZenWave Main API Gateway: Handles routing and application logic.\"\"\"`n    CORSMiddleware,
