@@ -85,7 +85,7 @@ async def chat(message: UserMessage):
     return ChatResponse(reply=reply, emotion=emotion, recommended_sound=sound_url)
 
 # ---------- Protected Route ----------
-@app.get("/profile")
+@app.post("/logout")`nasync def logout():`n    return logout_user()`n`n@app.get("/profile")
 def profile(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: Session = Depends(get_db),
