@@ -1,32 +1,94 @@
-# flutter_application_1
+# ZenWave Backend – Shangopithan
 
-A new Flutter project.
+This folder contains the FastAPI backend implementation for the ZenWave project.
 
-## Getting Started
+## Requirements
+Make sure Python is installed on your computer.
 
-This project is a starting point for a Flutter application.
+Check Python version:
 
-A few resources to get you started if this is your first Flutter project:
+python --version
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Recommended: Python 3.10 or later.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-# ZenWave – AI Powered Mental Wellness Support Platform
+---
 
-A new Flutter project.
+## Step 1: Clone the Repository
 
-## Getting Started
+git clone <repository-url>
+cd zenWave
+git checkout zenwave-backend
 
-This project is a starting point for a Flutter application.
+---
 
-A few resources to get you started if this is your first Flutter project:
+## Step 2: Go to Backend Folder
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+cd Shangopithan-backend
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+---
+
+## Step 3: Create Virtual Environment
+
+Create a virtual environment:
+
+python -m venv venv
+
+---
+
+## Step 4: Activate Virtual Environment
+
+### Windows (PowerShell)
+
+.\venv\Scripts\activate
+
+### Windows (Command Prompt)
+
+venv\Scripts\activate
+
+---
+
+## Step 5: Install Required Packages
+
+If requirements.txt is available:
+
+pip install -r requirements.txt
+
+If not:
+
+pip install fastapi uvicorn
+
+---
+
+## Step 6: Run the Backend Server
+
+uvicorn main:app --reload
+
+Server will run at:
+
+http://127.0.0.1:8000
+
+Swagger API documentation:
+
+http://127.0.0.1:8000/docs
+
+---
+
+## Important Notes
+
+The following files are not uploaded to GitHub:
+
+venv/
+__pycache__/
+*.db
+.env
+
+These files will be automatically created when running the project.
+
+Each developer must create their own virtual environment.
+
+---
+
+## Author
+
+Shangopithan  
+ZenWave Project Backend
