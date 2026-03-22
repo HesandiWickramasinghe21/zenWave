@@ -1,1 +1,1 @@
-from ai_logic import analyze_sentiment`ndef test_sentiment(): assert analyze_sentiment("happy") == "JOY"
+from ai_logic import analyze_sentiment`ndef test_sentiment_joy():`n    assert analyze_sentiment(\"amazing\") == \"JOY\"

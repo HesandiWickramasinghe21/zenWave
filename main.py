@@ -1,86 +1,27 @@
 from fastapi import FastAPI, Depends, HTTPException
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from pydantic import BaseModel
-from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
-
-from db import SessionLocal, Base, engine
 from models import UserMessage, ChatResponse, HealthResponse
 from ai_logic import analyze_sentiment, get_chatbot_response
 from database import save_user_mood, log_sound_recommendation
-from auth import register_user, login_user, logout_user, hash_password, verify_password, create_token, decode_token, User
+from auth import register_user, login_user, logout_user
 from constants import SOUND_LIBRARY, DEFAULT_HOST, DEFAULT_PORT
 from utils import setup_logger
 
 logger = setup_logger(__name__)
 
-app = FastAPI(title=\"ZenWave AI\", version=\"2.0.2\")
+app = FastAPI()
 
-# ---------- CORS ----------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Flutter Web / Mobile ok
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-security = HTTPBearer()
-
-# Create DB tables (first run / after DB delete)
-Base.metadata.create_all(bind=engine)
-
-# ---------- DB ----------
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-# ---------- Request Models ----------
-class SignUpRequest(BaseModel):
-    full_name: str | None = None
-    email: str
-    phone: str | None = None
-    gender: str | None = None
-    birthday: str | None = None
-    password: str
-
-class LoginRequest(BaseModel):
-    email: str
-    password: str
-
-class ForgotPasswordRequest(BaseModel):
-    email: str
-
-class ResetPasswordRequest(BaseModel):
-    email: str
-    new_password: str
-
-# ---------- Sign Up (Register new user) ----------
-@app.post("/register")
-def register(payload: SignUpRequest):
-    return register_user(payload.email, payload.password)
-
-# ---------- Login ----------
-@app.post("/login")
-def login(payload: LoginRequest):`n    return login_user(payload.email, payload.password)`n`n
-    user = db.query(User).filter(User.email == payload.email).first()
-    if not user or not verify_password(payload.password, user.password):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-
-    token = create_token(user.email)
-    return {"access_token": token, "token_type": "bearer"}
-
-# ---------- Chat Endpoint ----------
-@app.get("/health", response_model=HealthResponse)`nasync def health():`n    return HealthResponse(status="ok")`n`n@app.get("/mood/history/{user_id}")
-async def history(user_id: str):
-    return get_user_mood_history(user_id)
-
-@app.get("/mood/stats/{user_id}")
-async def stats(user_id: str):
-    return get_mood_statistics(user_id)
+@app.post("/register")`nasync def register(email: str, password: str):`n    return register_user(email, password)`n`n@app.post("/login")`nasync def login(email: str, password: str):`n    return login_user(email, password)`n`n@app.post("/logout")`nasync def logout():`n    return logout_user()`n`n@app.get("/mood/history/{user_id}")`nasync def history(user_id: str):`n    from database import get_user_mood_history; return get_user_mood_history(user_id)`n`n@app.get("/mood/stats/{user_id}")`nasync def stats(user_id: str):`n    from database import get_mood_statistics; return get_mood_statistics(user_id)`n`n@app.get("/health", response_model=HealthResponse)
+async def health():
+    return HealthResponse(status="ok")
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat(message: UserMessage):
@@ -89,53 +30,9 @@ async def chat(message: UserMessage):
         save_user_mood(message.user_id, emotion, message.text)
         log_sound_recommendation(message.user_id, emotion, sound_url)
     except Exception as e:
-        logger.error(f"Failed to log mood/sound: {e}")
+        logger.error(f"Failed to log mood or sound: {e}")
     return ChatResponse(reply=reply, emotion=emotion, recommended_sound=sound_url)
 
-# ---------- Protected Route ----------
-@app.post("/logout")`nasync def logout():`n    return logout_user()`n`n@app.get("/profile")
-def profile(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: Session = Depends(get_db),
-):
-    token = credentials.credentials
-    email = decode_token(token)
-    if not email:
-        raise HTTPException(status_code=401, detail="Invalid token")
-
-    user = db.query(User).filter(User.email == email).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    return {
-        "message": f"Welcome {user.email}",
-        "user": {
-            "email": user.email,
-            "full_name": user.full_name,
-            "phone": user.phone,
-            "gender": user.gender,
-            "birthday": user.birthday,
-        },
-    }
-
-# ---------- Forgot Password (check email exists) ----------
-@app.post("/forgot-password")
-def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == payload.email).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    # For project: just confirm email exists
-    return {"message": "Email verified. You can reset password."}
-
-# ---------- Reset Password (update new password) ----------
-@app.post("/reset-password")
-def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == payload.email).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    user.password = hash_password(payload.new_password)
-    db.commit()
-
-    return {"message": "Password updated successfully"}
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host=DEFAULT_HOST, port=DEFAULT_PORT)

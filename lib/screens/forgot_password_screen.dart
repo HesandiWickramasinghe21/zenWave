@@ -46,135 +46,71 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     }
   }
 
-@override
+  @override
   Widget build(BuildContext context) {
-    // Determine if we are in Dark Mode to match the Sign In logic
-    bool isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        // --- MATCHING GRADIENT FROM SIGN IN ---
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: isDark
-                ? [const Color(0xFF0F0F1A), const Color(0xFF1C1B29)]
-                : [
-                    const Color(0xFFEDE7F6),
-                    const Color(0xFFD1C4E9),
-                    const Color(0xFFB39DDB),
-                  ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              child: Container(
-                width: 400, // Matching the narrowed width from our last UI update
-                margin: const EdgeInsets.symmetric(horizontal: 24),
-                decoration: BoxDecoration(
-                  // --- MATCHING GLASS EFFECT ---
-                  color: isDark
-                      ? Colors.white.withOpacity(0.08)
-                      : Colors.white.withOpacity(0.30),
-                  borderRadius: BorderRadius.circular(24),
+      body: AuthBackground(
+        child: Center(
+          child: Container(
+            width: 420,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.30),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset('assets/zenwave_logo.png', height: 90),
+                const SizedBox(height: 14),
+                const Text(
+                  "Forgot Password",
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
-                child: Stack(
-                  children: [
-                    // --- BACK ICON ---
-                    Positioned(
-                      top: 12,
-                      left: 12,
-                      child: IconButton(
-                        icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-                        color: isDark ? Colors.white70 : const Color(0xFF2D3142),
-                        onPressed: () => Navigator.pop(context),
+                const SizedBox(height: 6),
+                const Text("Enter your email to continue"),
+                const SizedBox(height: 20),
+
+                TextField(
+                  controller: emailController,
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.email),
+                    hintText: "Email",
+                    filled: true,
+                    fillColor: Colors.white.withOpacity(0.9),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF6A1B9A),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-
-                    // --- CONTENT ---
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 40, 24, 30),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            "Forgot Password",
-                            style: TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.bold,
-                              color: isDark ? Colors.white : const Color(0xFF2D3142),
-                            ),
+                    onPressed: loading ? null : sendEmail,
+                    child: loading
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text(
+                            "Next",
+                            style: TextStyle(color: Colors.white),
                           ),
-                          const SizedBox(height: 10),
-                          Text(
-                            "Enter your email to continue",
-                            style: TextStyle(
-                              color: isDark ? Colors.white70 : Colors.black54,
-                            ),
-                          ),
-                          const SizedBox(height: 30),
-
-                          TextField(
-                            controller: emailController,
-                            style: TextStyle(color: isDark ? Colors.white : Colors.black87),
-                            decoration: InputDecoration(
-                              prefixIcon: Icon(Icons.email, color: isDark ? Colors.white70 : const Color.fromARGB(255, 0, 0, 0)),
-                              hintText: "Email",
-                              hintStyle: TextStyle(color: isDark ? const Color.fromARGB(97, 6, 6, 6) : const Color.fromARGB(255, 0, 0, 0)),
-                              filled: true,
-                              fillColor: isDark 
-                                  ? Colors.white.withOpacity(0.05) 
-                                  : Colors.white.withOpacity(0.9),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide.none,
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(height: 25),
-
-                          SizedBox(
-                            width: double.infinity,
-                            height: 50,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF6A1B9A),
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              onPressed: loading ? null : sendEmail,
-                              child: loading
-                                  ? const SizedBox(
-                                      width: 22,
-                                      height: 22,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                  : const Text(
-                                      "Next",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
         ),
