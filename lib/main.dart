@@ -1,4 +1,5 @@
 // ZenWave - Main entry point
+// ZenWave - Main entry point
 import 'package:flutter/material.dart';
 import 'screens/splash_login_screen.dart';
 import 'screens/main_wrapper.dart';
