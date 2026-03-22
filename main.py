@@ -28,7 +28,9 @@ async def chat(message: UserMessage):
     emotion = analyze_sentiment(message.text)
     save_user_mood(message.user_id, emotion, message.text)
     reply = get_chatbot_response(message.text, emotion)
-    return ChatResponse(reply=reply, emotion=emotion, recommended_sound="placeholder")
+    sound_url = SOUND_LIBRARY.get(emotion, SOUND_LIBRARY["NEUTRAL"])
+    log_sound_recommendation(message.user_id, emotion, sound_url)
+    return ChatResponse(reply=reply, emotion=emotion, recommended_sound=sound_url)
 
 if __name__ == "__main__":
     import uvicorn
