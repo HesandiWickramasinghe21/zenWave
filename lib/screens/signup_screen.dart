@@ -111,8 +111,8 @@ class _SignupScreenState extends State<SignupScreen> {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: isDark
-                    ? Colors.white.withOpacity(0.08)
-                    : Colors.white.withOpacity(0.30),
+                    ? Colors.white.withValues(alpha: 0.08)
+                    : Colors.white.withValues(alpha: 0.30),
                 borderRadius: BorderRadius.circular(24),
               ),
               child: child,
@@ -133,7 +133,7 @@ class _SignupScreenState extends State<SignupScreen> {
       suffixIcon: suffix,
       hintText: hint,
       filled: true,
-      fillColor: Colors.white.withOpacity(0.9),
+      fillColor: Colors.white.withValues(alpha: 0.9),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide.none,
@@ -219,7 +219,7 @@ class _SignupScreenState extends State<SignupScreen> {
               child: Container(
                 padding: const EdgeInsets.all(15),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -276,3 +276,5 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 }
+
+// Minor update: fix pass 4
