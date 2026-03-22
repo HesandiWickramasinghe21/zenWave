@@ -40,3 +40,5 @@ class ZenwaveApp extends StatelessWidget {
 // Minor update: refactor pass 1
 
 // Minor update: docs pass 8
+
+// Minor update: docs pass 21
