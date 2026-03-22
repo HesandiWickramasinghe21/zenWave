@@ -2,7 +2,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import requests  
 from ai_logic import analyze_sentiment, get_chatbot_response
 from database import save_user_mood, log_sound_recommendation
 
