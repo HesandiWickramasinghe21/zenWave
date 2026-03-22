@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 // Settings screen: manages user preferences and reminders
+// Settings screen: manages user preferences and reminders
 import '../services/local_storage.dart';
 import '../services/reminder_service.dart';
 import '../services/api_service.dart';
