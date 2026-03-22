@@ -1,4 +1,5 @@
 import 'dart:async';
+// SplashLoginScreen - handles initial app launch and login
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'signup_screen.dart';
