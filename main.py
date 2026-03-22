@@ -91,10 +91,11 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
 @app.post("/chat", response_model=ChatResponse)
 async def chat(message: UserMessage):
     emotion = analyze_sentiment(message.text)
-    save_user_mood(message.user_id, emotion, message.text)
-    reply = get_chatbot_response(message.text, emotion)
-    sound_url = SOUND_LIBRARY.get(emotion, SOUND_LIBRARY["NEUTRAL"])
-    log_sound_recommendation(message.user_id, emotion, sound_url)
+    try:
+        save_user_mood(message.user_id, emotion, message.text)
+        log_sound_recommendation(message.user_id, emotion, sound_url)
+    except Exception as e:
+        logger.error(f"Failed to log mood/sound: {e}")
     return ChatResponse(reply=reply, emotion=emotion, recommended_sound=sound_url)
 
 # ---------- Protected Route ----------
