@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Configuration
+# HuggingFace token should be loaded from secure environment variables.
 HF_TOKEN = os.getenv("HF_TOKEN")
 API_URL = "https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill"
 headers = {"Authorization": f"Bearer {HF_TOKEN}"}
