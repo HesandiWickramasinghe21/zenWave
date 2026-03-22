@@ -87,6 +87,15 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
     token = create_token(user.email)
     return {"access_token": token, "token_type": "bearer"}
 
+# ---------- Chat Endpoint ----------
+@app.post("/chat", response_model=ChatResponse)
+async def chat(message: UserMessage):
+    emotion = analyze_sentiment(message.text)
+    save_user_mood(message.user_id, emotion, message.text)
+    reply = get_chatbot_response(message.text, emotion)
+    sound_url = "placeholder" # logic for sound in next commit
+    return ChatResponse(reply=reply, emotion=emotion, recommended_sound=sound_url)
+
 # ---------- Protected Route ----------
 @app.get("/profile")
 def profile(
