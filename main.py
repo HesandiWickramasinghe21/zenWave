@@ -74,7 +74,15 @@ def login(payload: LoginRequest):`n    return login_user(payload.email, payload.
     return {"access_token": token, "token_type": "bearer"}
 
 # ---------- Chat Endpoint ----------
-@app.get("/health", response_model=HealthResponse)`nasync def health():`n    return HealthResponse(status="ok")`n`n@app.post("/chat", response_model=ChatResponse)
+@app.get("/health", response_model=HealthResponse)`nasync def health():`n    return HealthResponse(status="ok")`n`n@app.get("/mood/history/{user_id}")
+async def history(user_id: str):
+    return get_user_mood_history(user_id)
+
+@app.get("/mood/stats/{user_id}")
+async def stats(user_id: str):
+    return get_mood_statistics(user_id)
+
+@app.post("/chat", response_model=ChatResponse)
 async def chat(message: UserMessage):
     emotion = analyze_sentiment(message.text)
     try:
