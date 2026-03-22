@@ -87,7 +87,7 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
     return {"access_token": token, "token_type": "bearer"}
 
 # ---------- Protected Route ----------
-@app.get("/profile")
+@app.get("/profile", tags=["User Profile"])
 def profile(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: Session = Depends(get_db),
