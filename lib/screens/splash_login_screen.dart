@@ -373,3 +373,5 @@ class _SplashLoginScreenState extends State<SplashLoginScreen>
     );
   }
 }
+
+// Minor update: style pass 2
