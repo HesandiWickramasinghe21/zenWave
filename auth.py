@@ -1,6 +1,9 @@
 from datetime import datetime, timedelta
 from jose import jwt, JWTError
-from passlib.context import CryptContext`nfrom utils import setup_logger`n`nlogger = setup_logger(__name__)
+from passlib.context import CryptContext
+from utils import setup_logger
+
+logger = setup_logger(__name__)
 
 SECRET_KEY = "mysecret123"
 ALGORITHM = "HS256"
@@ -27,3 +30,15 @@ def decode_token(token: str):
         return payload.get("sub")
     except JWTError:
         return None
+
+def register_user(email: str, password: str):
+    # Registration logic placeholder
+    return {"message": "User registered"}
+
+def login_user(email: str, password: str):
+    # Login logic placeholder
+    return {"access_token": "fake_token", "token_type": "bearer"}
+
+def logout_user():
+    # Logout logic placeholder
+    return {"message": "Logged out successfully"}
