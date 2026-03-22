@@ -8,7 +8,7 @@ from db import SessionLocal, Base, engine
 from models import User
 from auth import hash_password, verify_password, create_token, decode_token
 
-app = FastAPI()
+app = FastAPI(title="ZenWave backend", description="Mental Wellness Support API")
 
 @app.get("/")
 def read_root():
