@@ -1,1 +1,8 @@
-SOUND_LIBRARY = {`n    \"JOY\": \"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3\",`n    \"STRESSED\": \"https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3\",`n    \"CRISIS\": \"https://cdn.pixabay.com/download/audio/2021/11/25/audio_91b106e572.mp3\",`n    \"NEUTRAL\": \"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3\",`n}`nDEFAULT_HOST = \"0.0.0.0\"`nDEFAULT_PORT = 8000
+SOUND_LIBRARY = {
+    "JOY": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+    "STRESSED": "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3",
+    "CRISIS": "https://cdn.pixabay.com/download/audio/2021/11/25/audio_91b106e572.mp3",
+    "NEUTRAL": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+}
+DEFAULT_HOST = "0.0.0.0"
+DEFAULT_PORT = 8000
