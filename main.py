@@ -24,6 +24,10 @@ class UserMessage(BaseModel):
     user_id: str = "student_user_1"
     session_id: str = "default_session"
 
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
+
 @app.post("/chat")
 async def chat_endpoint(message: UserMessage):
     """Process a chat message, evaluate emotion, and return response."""
