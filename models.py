@@ -1,3 +1,4 @@
+"""SQLAlchemy models representing database tables."""
 from sqlalchemy import Column, Integer, String
 from db import Base
 
