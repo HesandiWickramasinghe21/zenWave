@@ -1,1 +1,9 @@
-import os`nfrom dotenv import load_dotenv`n`nload_dotenv()`n`nclass Config:`n    HF_TOKEN = os.getenv("HF_TOKEN")`n    SUPABASE_URL = os.getenv("SUPABASE_URL", "https://aarsjmnfmcjrrjwrvzvo.supabase.co")`n    SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+class Config:
+    HF_TOKEN = os.getenv("HF_TOKEN")
+    SUPABASE_URL = os.getenv("SUPABASE_URL")
+    SUPABASE_KEY = os.getenv("SUPABASE_KEY")
