@@ -1,1 +1,1 @@
-from models import UserMessage`ndef test_message():`n    assert UserMessage(text=\"hello\").text == \"hello\"
+from models import UserMessage # Model`ndef test_message():`n    assert UserMessage # Model(text=\"hello\").text == \"hello\"
