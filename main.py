@@ -21,7 +21,8 @@ MOOD_DB_URL = "http://127.0.0.1:5000/add_mood"
 
 class UserMessage(BaseModel):
     text: str
-    user_id: str = "student_user_1" 
+    user_id: str = "student_user_1"
+    session_id: str = "default_session"
 
 @app.post("/chat")
 async def chat_endpoint(message: UserMessage):
