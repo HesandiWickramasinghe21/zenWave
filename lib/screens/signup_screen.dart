@@ -278,3 +278,5 @@ class _SignupScreenState extends State<SignupScreen> {
 }
 
 // Minor update: fix pass 4
+
+// Minor update: style pass 11
