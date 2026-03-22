@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/local_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Add this line
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,6 +19,8 @@ class _HomeScreenState extends State<HomeScreen> {
   String _fullName = "User";
   String? _selectedMood;
   bool _isSavingMood = false;
+  String _selectedAvatarPath = "assets/avatar/avatar1.png";
+  bool _hasSelectedAvatar = false;
 
   static const Color primaryIndigo = Color(0xFF6366F1);
   static const Color zenPurple = Color(0xFF6A1B9A);
@@ -30,29 +33,42 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadProfile();
   }
 
-  Future<void> _loadProfile() async {
-    try {
-      final savedName = await ApiService.getSavedUserName();
-      if (savedName != null && mounted) {
-        setState(() {
-          _fullName = savedName.trim();
-          _displayName = savedName.trim().split(' ').first;
-        });
-      }
-      final data = await ApiService.profile();
-      if (!mounted) return;
+Future<void> _loadProfile() async {
+  try {
+    // 1. Load Avatar from Local Storage
+    final prefs = await SharedPreferences.getInstance();
+    final String? savedAvatar = prefs.getString('user_avatar_path');
+
+    // 2. Load Names from API
+    final savedName = await ApiService.getSavedUserName();
+    if (savedName != null && mounted) {
       setState(() {
-        final String fullName = data["full_name"]?.toString() ?? "";
-        if (fullName.isNotEmpty) {
-          _fullName = fullName;
-          _displayName = fullName.split(' ').first;
-        }
-        _isLoading = false;
+        _fullName = savedName.trim();
+        _displayName = savedName.trim().split(' ').first;
       });
-    } catch (e) {
-      if (mounted) setState(() => _isLoading = false);
     }
+    
+    final data = await ApiService.profile();
+    if (!mounted) return;
+
+    setState(() {
+      // Set the Avatar in UI
+      if (savedAvatar != null && savedAvatar.isNotEmpty) {
+        _selectedAvatarPath = savedAvatar;
+        _hasSelectedAvatar = true;
+      }
+
+      final String fullName = data["full_name"]?.toString() ?? "";
+      if (fullName.isNotEmpty) {
+        _fullName = fullName;
+        _displayName = fullName.split(' ').first;
+      }
+      _isLoading = false;
+    });
+  } catch (e) {
+    if (mounted) setState(() => _isLoading = false);
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -97,10 +113,10 @@ slivers: [
     );
   }
 
-  Widget _buildSliverAppBar() {
+Widget _buildSliverAppBar() {
     return SliverAppBar(
       expandedHeight: 140,
-      backgroundColor: Colors.transparent, // Keeps the gradient visible
+      backgroundColor: Colors.transparent,
       elevation: 0,
       pinned: true,
       automaticallyImplyLeading: false,
@@ -122,16 +138,29 @@ slivers: [
                 ],
               ),
               GestureDetector(
-                onTap: () => Navigator.pushNamed(context, '/profile'),
+                onTap: () async {
+                  // We 'await' the result so when we return from the profile screen,
+                  // the Home screen re-loads the new avatar path from storage.
+                  await Navigator.pushNamed(context, '/profile');
+                  _loadProfile(); 
+                },
                 child: Container(
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     boxShadow: [BoxShadow(color: primaryIndigo.withOpacity(0.1), blurRadius: 10)],
                   ),
-                  child: const CircleAvatar(
+                  child: CircleAvatar(
                     radius: 25,
                     backgroundColor: Colors.white,
-                    child: Icon(Icons.person_outline_rounded, color: primaryIndigo),
+                    // --- UPDATED LOGIC ---
+                    // If we have a selected avatar, use it as the background image
+                    backgroundImage: _hasSelectedAvatar 
+                        ? AssetImage(_selectedAvatarPath) 
+                        : null,
+                    // Show the Icon ONLY if we don't have a selected avatar
+                    child: !_hasSelectedAvatar 
+                        ? const Icon(Icons.person_outline_rounded, color: primaryIndigo) 
+                        : null,
                   ),
                 ),
               ),
@@ -194,8 +223,6 @@ Widget _buildJourneyGrid() {
       ),
     );
   }
-
-  // ... (Keeping your Mood Section and Quote Card as they were correct) ...
   
   Widget _buildModernMoodSection() {
     return Column(
