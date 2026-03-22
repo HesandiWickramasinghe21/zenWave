@@ -1,4 +1,5 @@
 import 'dart:math';
+// AuthBackground widget - shared background for auth screens
 import 'package:flutter/material.dart';
 
 class AuthBackground extends StatefulWidget {
