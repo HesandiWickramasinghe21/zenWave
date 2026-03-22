@@ -1,94 +1,61 @@
-# ZenWave Backend – Shangopithan
+# ZenWave - Mental Health Support Application
 
-This folder contains the FastAPI backend implementation for the ZenWave project.
+ZenWave is an AI-powered mental health support application that provides
+empathetic chatbot responses, mood tracking, and therapeutic sound
+recommendations.
 
-## Requirements
-Make sure Python is installed on your computer.
+## Features
 
-Check Python version:
+- **AI Chatbot**: Empathetic conversational AI powered by HuggingFace
+- **Mood Detection**: Automatic sentiment analysis (JOY, STRESSED, CRISIS, NEUTRAL)
+- **Sound Therapy**: Mood-based therapeutic audio recommendations
+- **Mood History**: Track emotional patterns over time
+- **User Authentication**: Secure registration and login via Supabase
 
-python --version
+## Tech Stack
 
-Recommended: Python 3.10 or later.
+- **Backend**: FastAPI (Python)
+- **Database**: Supabase (PostgreSQL)
+- **AI Model**: HuggingFace BlenderBot 400M
+- **Auth**: Supabase Auth
 
----
+## Setup
 
-## Step 1: Clone the Repository
+1. Clone the repository
+2. Copy `.env.example` to `.env` and fill in your credentials
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. Run the server:
+   ```bash
+   python main.py
+   ```
 
-git clone <repository-url>
-cd zenWave
-git checkout zenwave-backend
+## API Endpoints
 
----
+| Method | Endpoint                  | Description                |
+|--------|---------------------------|----------------------------|
+| GET    | `/health`                 | Health check               |
+| POST   | `/chat`                   | Send a chat message        |
+| POST   | `/register`               | Register a new user        |
+| POST   | `/login`                  | Login                      |
+| POST   | `/logout`                 | Logout                     |
+| GET    | `/mood/history/{user_id}` | Get mood history           |
+| GET    | `/mood/stats/{user_id}`   | Get mood statistics        |
 
-## Step 2: Go to Backend Folder
+## Project Structure
 
-cd Shangopithan-backend
-
----
-
-## Step 3: Create Virtual Environment
-
-Create a virtual environment:
-
-python -m venv venv
-
----
-
-## Step 4: Activate Virtual Environment
-
-### Windows (PowerShell)
-
-.\venv\Scripts\activate
-
-### Windows (Command Prompt)
-
-venv\Scripts\activate
-
----
-
-## Step 5: Install Required Packages
-
-If requirements.txt is available:
-
-pip install -r requirements.txt
-
-If not:
-
-pip install fastapi uvicorn
-
----
-
-## Step 6: Run the Backend Server
-
-uvicorn main:app --reload
-
-Server will run at:
-
-http://127.0.0.1:8000
-
-Swagger API documentation:
-
-http://127.0.0.1:8000/docs
-
----
-
-## Important Notes
-
-The following files are not uploaded to GitHub:
-
-venv/
-__pycache__/
-*.db
-.env
-
-These files will be automatically created when running the project.
-
-Each developer must create their own virtual environment.
-
----
-
-## Author
-
-Shangopithan  
-ZenWave Project Backend
+```
+├── main.py           # FastAPI application entry point
+├── ai_logic.py       # Sentiment analysis and chatbot logic
+├── database.py       # Supabase database operations
+├── auth.py           # Authentication module
+├── models.py         # Pydantic data models
+├── config.py         # Centralized configuration
+├── constants.py      # Application constants
+├── utils.py          # Utility functions
+├── test_ai_logic.py  # AI logic unit tests
+├── test_models.py    # Model unit tests
+└── requirements.txt  # Python dependencies
+```
