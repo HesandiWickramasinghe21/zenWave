@@ -1,5 +1,6 @@
 import 'dart:ui';
 // UserProfileScreen - displays and edits user profile details
+// UserProfileScreen - displays and edits user profile details
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'privacy_screen.dart';
