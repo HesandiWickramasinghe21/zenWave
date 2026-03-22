@@ -19,7 +19,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.post("/register")`nasync def register(email: str, password: str):`n    return register_user(email, password)`n`n@app.post("/login")`nasync def login(email: str, password: str):`n    return login_user(email, password)`n`n@app.post("/logout")`nasync def logout():`n    return logout_user()`n`n@app.get("/mood/history/{user_id}")`nasync def history(user_id: str):`n    from database import get_user_mood_history; return get_user_mood_history(user_id)`n`n@app.get("/health", response_model=HealthResponse)
+@app.post("/register")`nasync def register(email: str, password: str):`n    return register_user(email, password)`n`n@app.post("/login")`nasync def login(email: str, password: str):`n    return login_user(email, password)`n`n@app.post("/logout")`nasync def logout():`n    return logout_user()`n`n@app.get("/mood/history/{user_id}")`nasync def history(user_id: str):`n    from database import get_user_mood_history; return get_user_mood_history(user_id)`n`n@app.get("/mood/stats/{user_id}")`nasync def stats(user_id: str):`n    from database import get_mood_statistics; return get_mood_statistics(user_id)`n`n@app.get("/health", response_model=HealthResponse)
 async def health():
     return HealthResponse(status="ok")
 
