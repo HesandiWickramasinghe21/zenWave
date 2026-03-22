@@ -113,7 +113,7 @@ def profile(
     }
 
 # ---------- Forgot Password (check email exists) ----------
-@app.post("/forgot-password")
+@app.post("/forgot-password", tags=["Password Management"])
 def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == payload.email).first()
     if not user:
@@ -123,7 +123,7 @@ def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db
     return {"message": "Email verified. You can reset password."}
 
 # ---------- Reset Password (update new password) ----------
-@app.post("/reset-password")
+@app.post("/reset-password", tags=["Password Management"])
 def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == payload.email).first()
     if not user:
