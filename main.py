@@ -18,7 +18,7 @@ def read_root():
 # ---------- CORS ----------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Flutter Web / Mobile ok
+    allow_origins=["*"] # TODO: Restrict in production,  # Flutter Web / Mobile ok
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
