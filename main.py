@@ -1,7 +1,6 @@
 # Entry point for the ZenWave FastAPI application.
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 from models import UserMessage, ChatResponse, HealthResponse
 from ai_logic import analyze_sentiment, get_chatbot_response
 from database import save_user_mood, log_sound_recommendation, get_user_mood_history, get_mood_statistics
