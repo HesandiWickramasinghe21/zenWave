@@ -11,8 +11,9 @@ load_dotenv()
 
 # Supabase Configuration
 # Ensure that Supabase credentials are kept securely in the environment.
-SUPABASE_URL = os.getenv("SUPABASE_URL", "https://aarsjmnfmcjrrjwrvzvo.supabase.co")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+from config import Config
+SUPABASE_URL = Config.SUPABASE_URL
+SUPABASE_KEY = Config.SUPABASE_KEY
 
 # Initialize Supabase client for authentication
 _auth_client: Client = None
