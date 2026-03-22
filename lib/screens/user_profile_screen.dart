@@ -5,6 +5,7 @@ import 'privacy_screen.dart';
 import 'purchase_history_screen.dart';
 import 'help_support_screen.dart';
 import 'settings_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class UserProfileScreen extends StatefulWidget {
   const UserProfileScreen({super.key});
@@ -31,22 +32,47 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     _loadUserData();
   }
 
-  Future<void> _loadUserData() async {
-    try {
-      final data = await ApiService.profile();
-      if (!mounted) return;
+Future<void> _loadUserData() async {
+  try {
+    // 1. Get API data first
+    final data = await ApiService.profile();
+    
+    // 2. Get saved avatar second
+    final prefs = await SharedPreferences.getInstance();
+    final String? savedAvatar = prefs.getString('user_avatar_path');
+
+    if (!mounted) return;
+
+    setState(() {
+      // Set API data
+      final String fullName = data["full_name"]?.toString() ?? "User";
+      _firstName = fullName.split(' ').first;
+      _email = data["email"]?.toString() ?? "zen@member.com";
+
+      if (savedAvatar != null && savedAvatar.isNotEmpty) {
+        _selectedAvatarPath = savedAvatar;
+        _hasSelectedAvatar = true; // This tells the UI to show the image
+      }
+      
+      _isLoading = false;
+    });
+  } catch (e) {
+    debugPrint("Profile Loading Error: $e");
+    // Even if API fails, try to load the avatar anyway
+    final prefs = await SharedPreferences.getInstance();
+    final String? savedAvatar = prefs.getString('user_avatar_path');
+    
+    if (mounted) {
       setState(() {
-        final String fullName = data["full_name"]?.toString() ?? "User";
-        _firstName = fullName.split(' ').first;
-        _email = data["email"]?.toString() ?? "zen@member.com";
+        if (savedAvatar != null) {
+          _selectedAvatarPath = savedAvatar;
+          _hasSelectedAvatar = true;
+        }
         _isLoading = false;
       });
-    } catch (e) {
-      debugPrint("Profile Loading Error: $e");
-      if (!mounted) return;
-      setState(() => _isLoading = false);
     }
   }
+}
 
   void _showLogoutDialog() {
     showDialog(
@@ -100,13 +126,16 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               itemBuilder: (context, index) {
                 final String path = "assets/avatar/avatar${index + 1}.png";
                 return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedAvatarPath = path;
-                      _hasSelectedAvatar = true;
-                    });
-                    Navigator.pop(context);
-                  },
+                onTap: () async { 
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.setString('user_avatar_path', path);
+                  print("Successfully saved avatar: $path");
+                  setState(() {
+                    _selectedAvatarPath = path;
+                    _hasSelectedAvatar = true;
+                  });
+                  Navigator.pop(context);
+                },
                   child: CircleAvatar(
                     backgroundColor: zenAccent.withOpacity(0.1),
                     foregroundImage: AssetImage(path),
