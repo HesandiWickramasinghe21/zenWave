@@ -377,3 +377,5 @@ class _SplashLoginScreenState extends State<SplashLoginScreen>
 // Minor update: style pass 2
 
 // Minor update: refactor pass 10
+
+// Minor update: fix pass 18
