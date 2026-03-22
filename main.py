@@ -7,6 +7,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from db import SessionLocal, Base, engine
 from models import User
 from auth import hash_password, verify_password, create_token, decode_token
+from utils import setup_logger
+
+logger = setup_logger(__name__)
 
 app = FastAPI()
 
