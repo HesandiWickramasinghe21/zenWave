@@ -10,7 +10,11 @@ from constants import SOUND_LIBRARY, DEFAULT_HOST, DEFAULT_PORT
 
 logger = setup_logger(__name__)
 
-app = FastAPI()
+app = FastAPI(
+    title="ZenWave API",
+    description="AI-powered mental health support application",
+    version="1.0.0",
+)
 
 # IMPORTANT: This allows your Flutter app to talk to the backend
 app.add_middleware(
