@@ -1,3 +1,19 @@
+# flutter_application_1
+
+A new Flutter project.
+
+## Getting Started
+
+This project is a starting point for a Flutter application.
+
+A few resources to get you started if this is your first Flutter project:
+
+- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
+- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+
+For help getting started with Flutter development, view the
+[online documentation](https://docs.flutter.dev/), which offers tutorials,
+samples, guidance on mobile development, and a full API reference.
 # ZenWave – AI Powered Mental Wellness Support Platform
 
 ZenWave is an AI-powered mental wellness support platform designed to provide **non-clinical emotional assistance** through intelligent conversation and adaptive relaxation features. The system helps users reflect on their emotions and receive supportive responses using AI technologies.
