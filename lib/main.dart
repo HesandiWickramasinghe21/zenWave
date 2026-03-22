@@ -44,3 +44,5 @@ class ZenwaveApp extends StatelessWidget {
 // Minor update: docs pass 21
 
 // Minor update: docs pass 27
+
+// Minor update: chore pass 30
