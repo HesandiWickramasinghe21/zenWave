@@ -1,3 +1,4 @@
+// ResetPasswordScreen - allows users to set a new password after verification
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../widgets/auth_background.dart';
