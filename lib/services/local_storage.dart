@@ -1,4 +1,5 @@
 import 'dart:convert';
+// LocalStorage - manages persistent local data using SharedPreferences
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LocalStorage {
